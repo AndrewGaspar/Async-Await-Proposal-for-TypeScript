@@ -20,10 +20,45 @@ Some goals of this proposal:
 * Minimize the boilerplate JavaScript code needed to implement features of async/await.
 * Avoid dependence on environment specific functions, like `setImmediate` or `process.nextTick`.
 * Be able to deal with the same situations as C#.
+* ECMAScript 5 compatibility will be focused on first and will work backwards towards ECMAScript 3 compatibility.
+
+Organization:
+* Rather that showing the compiled JavaScript output with each TypeScript+Async/Await sample, I will show the sample
+  compiled to vanilla TypeScript, hopefully to make it easier to grok.
 
 ## An example from C#
 
-See AsyncAwesome.cs
+See AsyncAwesome.cs. Notice there are a few different use cases that must be covered to consider our implementation a
+success:
+* `await` assignment can exist within a condition. In fact, the function can never await a task, but still return the
+  syncrhonously-assigned value wrapped in a task.
+* Tasks can be `await`ed in a loop synchronously. The next step will not be completed until the previous iteration
+  completes.
+* `await`s can be performed inside of conditions or as function parameters
+
+## Principles of Implementation
+
+### Implicit Promise Interface
+Because we want to only `await` those values which match the Promises/A+ spec, we will be using the following
+interface to judge whether the object matches the spec:
+
+```ts
+interface Promise {
+  then(onFulfilled?: (value?: any) => any, onRejected?: (reason?: any) => any);
+}
+```
+
+Consider this an *implicit* interface. It does not need to be included in your code, but any value that you wish to
+await on must implement at least this interface. The TypeScript compiler will ensure this correctness.
+
+### `onFulfilled` as the continuation
+
+The basic idea is that whatever statements follow an `await` statement is the callback to that await statement.
+
+Consider the following hypothetical 
+```ts
+
+```
 
 ## Single Statement `await`s
 
