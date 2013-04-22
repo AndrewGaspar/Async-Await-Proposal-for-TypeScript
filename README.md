@@ -16,6 +16,15 @@ certain things the spec alone can not handle well - using promises directly in c
 loops, and assigning to a typed value using both an `async` function call and synchronously, depending on a branching
 statement.
 
+Some goals of this proposal:
+* Minimize the boilerplate JavaScript code needed to implement features of async/await.
+* Avoid dependence on environment specific functions, like `setImmediate` or `process.nextTick`.
+* Be able to deal with the same situations as C#.
+
+## An example from C#
+
+See AsyncAwesome.cs
+
 ## Single Statement `await`s
 
 TODO
@@ -28,7 +37,7 @@ TODO
 
 TODO
 
-## Await In Loops
+## `await` In Loops
 
 TODO
 
