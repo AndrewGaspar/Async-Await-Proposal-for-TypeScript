@@ -103,12 +103,16 @@ if(await condition()) {
 
 A naive solution would look something like:
 ```ts
-function cont1() {
-  
+function condition() {
+  return user.canComment().then(function(b1) {
+    return currentPost.hasCommentsEnabled().then(function(b2) {
+      return b1 && b2;
+    });
+  });
 }
 
-user.canComment().then(function(b1) {
-  currentPost.then(function(
+condition().then(function(b) {
+  user.postComment(currentPost, comment);
 });
 ```
 
