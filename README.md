@@ -26,12 +26,13 @@ Organization:
 * Rather that showing the compiled JavaScript output with each TypeScript+Async/Await sample, I will show the sample
   compiled to vanilla TypeScript, hopefully to make it easier to grok.
 
-## An example from C#
+An example from C#
+------------------
 
 See AsyncAwesome.cs. Notice there are a few different use cases that must be covered to consider our implementation a
 success:
-* `await` assignment can exist within a condition. In fact, the function can never await a task, but still return the
-  syncrhonously-assigned value wrapped in a task.
+* `await` assignment can exist within a condition. In fact, the function can never await a task due to the branches
+  taken, but still return the syncrhonously-assigned value wrapped in a task.
 * Tasks can be `await`ed in a loop synchronously. The next step will not be completed until the previous iteration
   completes.
 * `await`s can be performed inside of conditions or as function parameters
@@ -43,13 +44,13 @@ Because we want to only `await` those values which match the Promises/A+ spec, w
 interface to judge whether the object matches the spec:
 
 ```ts
-interface Promise {
-  then(onFulfilled?: (value?: any) => any, onRejected?: (reason?: any) => any);
+interface Promise<T> {
+     then<U>(onFulfilled?: (value?: T) => U, onRejected?: (reason?: any) => any): Promise<U>;
 }
 ```
 
 Consider this an *implicit* interface. It does not need to be included in your code, but any value that you wish to
-await on must implement at least this interface. The TypeScript compiler will ensure this correctness.
+await on must implement this interface. The TypeScript compiler will ensure this correctness.
 
 ### `onFulfilled` as the continuation
 
@@ -64,9 +65,52 @@ Consider the following hypothetical
 
 TODO
 
-## `await` In Conditional Statements
+## `await` In Boolean Statements
 
 TODO
+
+The problem with boolean statements is that parts of the statements are only evaluated if they are needed to determine
+the truthiness of the expression. For example, consider the following completely synchronous script:
+```ts
+var x = 0, y = 0;
+
+function incrementX() { x++; return true; }
+function decrementY() { y--; return false; }
+
+incrementX() || decrementY(); // x = 1, y = 0
+incrementX() && decrementY(); // x = 2, y = -1
+decrementY() && incrementX(); // x = 2, y = -2
+decrementY() || incrementX(); // x = 3, y = -3
+```
+
+This shows the need for a bit of intelligence in scripts like the following:
+```ts
+if(await user.canComment() && await currentPost.hasCommentsEnabled()) {
+  user.postComment(currentPost, comment);
+}
+```
+
+Before we continue, we'll transform this expression to:
+```ts
+function condition(): Promise<boolean> {
+  return await user.canComment() && await currentPost.hasCommentsEnabled();
+}
+
+if(await condition()) {
+  user.postComment(currentPost, comment);
+}
+```
+
+A naive solution would look something like:
+```ts
+function cont1() {
+  
+}
+
+user.canComment().then(function(b1) {
+  currentPost.then(function(
+});
+```
 
 ## Assigning to Typed Value Synchronously and Asynchronously
 
@@ -75,4 +119,48 @@ TODO
 ## `await` In Loops
 
 TODO
+While loops and for loops must both be transformed for us to reason about them in a way that aligns with the
+async/await pattern.
 
+While loops:
+
+Valid Async/Await Code:
+```ts
+while(x !== "no" && y() || z()) {
+  x = await getX();
+}
+```
+
+Transformed Code:
+```ts
+function condition() {
+  return x !== "no" && y() || z();
+}
+
+while(condition()) {
+  x = await getX();
+}
+```
+
+Similarly, for loops will be transformed as well.
+
+Valid Async/Await Code:
+```ts
+for(var i = 0; i < requests.length; i++) {
+  await requests[i].send();
+}
+```
+
+Transformed Code:
+```ts
+var i = 0;
+
+function condition() {
+  i < requests.length;
+}
+
+while(condition()) {
+  await requests[i].send();
+  i++;
+}
+```
