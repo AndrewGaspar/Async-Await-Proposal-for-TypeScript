@@ -37,6 +37,19 @@ success:
   completes.
 * `await`s can be performed inside of conditions or as function parameters
 
+## Syntax
+
+Class/Interface methods, functions, and arrow function expressions can all be modified using the async keyword.
+
+As of the TypeScript Language Specification, functions are defined using the following expressions:
+
+*FunctionExpression:*
+  function  *Identifier<sub>opt</sub>* *CallSignature* { *FunctionBody*  }
+
+*AssignmentExpression:*
+  ...
+  *ArrowFunctionExpression*
+
 ## Principles of Implementation
 
 ### Implicit Promise Interface
@@ -56,9 +69,9 @@ await on must implement this interface. The TypeScript compiler will ensure this
 
 The basic idea is that whatever statements follow an `await` statement is the callback to that await statement.
 
-Consider the following hypothetical 
+Consider the following hypothetical async/await enabled TypeScript code:
 ```ts
-
+async 
 ```
 
 ## Single Statement `await`s
@@ -74,8 +87,8 @@ the truthiness of the expression. For example, consider the following completely
 ```ts
 var x = 0, y = 0;
 
-function incrementX() { x++; return true; }
-function decrementY() { y--; return false; }
+function incrementX(): boolean { x++; return true; }
+function decrementY(): boolean { y--; return false; }
 
 incrementX() || decrementY(); // x = 1, y = 0
 incrementX() && decrementY(); // x = 2, y = -1
