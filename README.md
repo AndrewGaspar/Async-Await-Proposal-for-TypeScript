@@ -127,11 +127,28 @@ fulfilled.
 
 ## Code Generation
 
+### Non-trivial Language Features to Preserve
+
+* Variable declaration hoisting must remain intact.
+* Short circuiting boolean operators
+* Conditions
+* Conditional Expressions
+* Loops
+
 ### Single Statement `await`s
 
-TODO
+Take a look at the following script:
+```ts
+async function getBlogPostsWithCommentsAsync() {
+  var posts = await getBlogPostsAsync();
+  
+  var commentRequests = posts.map(function(post) { return post.getCommentsAsync(); });
+  
+  var comments = await Q.when(commentRequests);
+}
+```
 
-### `await` In Boolean Statements
+### `await` In Boolean Expressions
 
 TODO
 
