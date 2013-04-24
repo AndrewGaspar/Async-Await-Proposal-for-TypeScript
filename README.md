@@ -137,14 +137,138 @@ fulfilled.
 
 ### Single Statement `await`s
 
+The entire basis of our transformations of async functions is based on this procedure:
+
+1. Hoist all variable declarations.
+2. Transform all structures in the async function into awaitable Promise producing expressions. This code generation
+   is covered in the following sections.
+3. Return the Expression portion of the first AwaitExpression. The await keyword is thrown out.
+4. All of the expressions following the AwaitExpression up to the next AwaitExpression will be placed inside a
+   continuation function. `.then()` will be called on the Promise from the previous step. The continuation function
+   will be passed to the `onFulfilled` parameter of the `.then` call.
+5. Repeat step 3 through 5 until reaching the end of the function.
+
 Take a look at the following script:
 ```ts
-async function getBlogPostsWithCommentsAsync() {
+import Q = module('q');
+import _ = module('underscore');
+
+async function getAllAuthorCommentsAsync() {
   var posts = await getBlogPostsAsync();
   
   var commentRequests = posts.map(function(post) { return post.getCommentsAsync(); });
   
-  var comments = await Q.when(commentRequests);
+  var authors = posts.map(function(post) { return post.author; });
+  
+  var commentLists = await Q.all(commentRequests);
+  
+  var comments = _.flatten(commentLists);
+  
+  return comments.filter((comment) => 
+    authors.some((author) => 
+      author === comment.author));
+}
+```
+
+This example shows the need for variable hoisting. Consider if it were reduced to the following in accordance with
+the pattern of Promises.
+```js
+var Q = require('q');
+var _ = require('underscore');
+
+function getAllAuthorCommentsAsync() {
+  return getBlogPostsAsync().then(function(posts) {
+    var commentRequests = posts.map(function(post) {
+      return post.getCommentsAsync();
+    });
+    
+    var authors = _.uniq(posts.map(function(post) { 
+      return post.author;
+    }));
+    
+    return Q.all(commentRequests);
+  }).then(function(commentLists) {
+    var comments = _.flatten(commentLists);
+    
+    return comments.filter(function(comment) {
+      return authors.some(function(author) {
+        return author === comment.author;
+      });
+    });
+  });
+}
+```
+
+The problems with this should be evident. In the second continuation, it tries to use authors, but authors is only
+defined in the first continuation. This code would fail with some sort of error stating that "undefined" does not
+have method "some". This is because variable declarations are not explicitly hoisted. This code would be written
+"correctly" like this:
+```js
+function getAllAuthorCommentsAsync() {
+  var posts, commentRequests, authors, commentLists, comments;
+
+  return getBlogPostsAsync().then(function(_0) {
+    posts = _0;
+    
+    commentRequests = posts.map(function(post) {
+      return post.getCommentsAsync();
+    });
+    
+    authors = _.uniq(posts.map(function(post) { 
+      return post.author;
+    }));
+    
+    return Q.all(commentRequests);
+  }).then(function(_1) {
+    commentLists = _1;
+    
+    comments = _.flatten(commentLists);
+    
+    return comments.filter(function(comment) {
+      return authors.some(function(author) {
+        return author === comment.author;
+      });
+    });
+  });
+}
+```
+
+Now that we have manually hoisted all of the variables in the async function, the function should operate as
+expected. Notice we provide a garbage name, like `_0`, as an argument for each `onFulfilled` function. A counter
+must be kept of how many of these temporary references are made. This is done because it is intended for a single
+use but will not be used again.
+
+### AwaitExpression as Part of a Larger Statement
+
+Consider this expression:
+
+```ts
+async function getChildrensDiscountAsync() {
+  return await getRegularPriceAsync() - await getCustomerAgeAsync() * 0.4;
+}
+```
+
+In order to follow the procedure described in the previous section, we must transform the function to:
+
+```ts
+async function getChildrensDiscountAsync() {
+  var _0 = await getRegularPriceAsync();
+  var _1 = await getCustomerAgeAsync();
+  return _0 - _1 * 0.4;
+}
+```
+
+Using this, we can transform the function as in the previous example:
+```js
+function getChildrensDiscountAsync() {
+  var _0, _1;
+  return getRegularPriceAsync().then(function(_2) {
+    _0 = _2;
+    return getCustomerAgeAsync();
+  }).then(function(_3)) {
+    _1 = _3; 
+    return _0 - _1 * 0.4;
+  }
 }
 ```
 
