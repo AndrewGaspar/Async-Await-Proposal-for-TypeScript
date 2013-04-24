@@ -39,16 +39,43 @@ success:
 
 ## Syntax
 
+### Expression
+
 Class/Interface methods, functions, and arrow function expressions can all be modified using the async keyword.
 
 As of the TypeScript Language Specification, functions are defined using the following expressions:
 
-*FunctionExpression:*
-  function  *Identifier<sub>opt</sub>* *CallSignature* { *FunctionBody*  }
+```
+FunctionExpression:
+  function  Identifier? CallSignature { FunctionBody  }
 
-*AssignmentExpression:*
+AssignmentExpression:
   ...
-  *ArrowFunctionExpression*
+  ArrowFunctionExpression
+
+ArrowFunctionExpression:
+  ArrowFormalParameters =>  Block
+  ArrowFormalParameters =>  AssignmentExpression
+
+ArrowFormalParameters:
+  CallSignature
+  Identifier
+
+CallSignature:
+  ( ParameterList? ) ReturnTypeAnnotation?
+```
+
+Async/Await will extend this syntax with:
+
+```
+AsyncFunctionExpression:
+  async FunctionExpression
+  async ArrowFunctionExpression
+```
+
+### Typings
+
+If a type is not specified for the function, it will default to a type of Promise<any>. A
 
 ## Principles of Implementation
 
