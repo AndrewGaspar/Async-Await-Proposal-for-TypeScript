@@ -2,11 +2,11 @@
 
 The TypeScript team is investigating
 [Async/Await](https://typescript.codeplex.com/wikipage?title=Roadmap&referringTitle=Home). 
-What follows is a proposal for how Async/Await should be implemented. It embraces the widely accepted community standard
-for syntactically sane asynchronous programming: [Promises/A+ spec](http://promises-aplus.github.io/promises-spec/).
-By using promises as the atomic unit for async/await in TypeScript, the language taps into a large, existing set of
-libraries ([Q](https://github.com/kriskowal/q), 
-[WinJS](http://msdn.microsoft.com/en-us/library/windows/apps/br211867.aspx),
+What follows is a proposal for how Async/Await should be implemented. It embraces the widely accepted community
+standard for syntactically sane asynchronous programming: 
+[Promises/A+ spec](http://promises-aplus.github.io/promises-spec/). By using promises as the atomic unit for
+async/await in TypeScript, the language taps into a large, existing set of libraries 
+([Q](https://github.com/kriskowal/q), [WinJS](http://msdn.microsoft.com/en-us/library/windows/apps/br211867.aspx),
 [DOM Futures proposal](http://dom.spec.whatwg.org/#futures), etc.), making them instantly compatible.
 
 The need is clear - asynchronous behavior, and the handling of that behavior, can be difficult to reason about in
@@ -17,33 +17,46 @@ loops, and assigning to a typed value using both an `async` function call and sy
 statement.
 
 Some goals of this proposal:
-* Minimize the boilerplate JavaScript code needed to implement features of async/await.
-* Avoid dependence on environment specific functions, like `setImmediate` or `process.nextTick`.
-* Be able to deal with the same situations as C#.
-* ECMAScript 5 compatibility will be focused on first and will work backwards towards ECMAScript 3 compatibility.
+* Be able to handle all use cases covered by async/await in C#.
+* Fairly readable output
 
 Organization:
 * Rather that showing the compiled JavaScript output with each TypeScript+Async/Await sample, I will show the sample
-  compiled to vanilla TypeScript, hopefully to make it easier to grok.
+  compiled to vanilla TypeScript, hopefully to make it easier to grok. This way I don't add needless complexity by
+  showing JavaScript versions of unrelated TypeScript structures, like compiled class and module expressions.
 
 An example from C#
 ------------------
 
-See AsyncAwesome.cs. Notice there are a few different use cases that must be covered to consider our implementation a
-success:
+See AsyncAwesome.cs. Notice there are a few different use cases that must be covered to consider our implementation
+a success:
 * `await` assignment can exist within a condition. In fact, the function can never await a task due to the branches
   taken, but still return the syncrhonously-assigned value wrapped in a task.
 * Tasks can be `await`ed in a loop synchronously. The next step will not be completed until the previous iteration
   completes.
 * `await`s can be performed inside of conditions or as function parameters
 
-## Syntax
+## Expressions
 
-### Expression
+### Implicit Promise Interface
+Because we want to only `await` those values which match the Promises/A+ spec, we will be using the following
+interface to judge whether the object matches the spec:
+
+```ts
+interface Promise<T> {
+  then<U>(onFulfilled?: (value?: T) => U, onRejected?: (reason?: any) => any): Promise<U>;
+  then<U>(onFulfilled?: (value?: T) => Promise<U>, onRejected?: (reason?: any) => any): Promise<U>;
+}
+```
+
+Consider this an *implicit* interface. It does not need to be included in your code, but any value that you wish to
+await on must implement this interface. The TypeScript compiler will ensure this correctness.
+
+### Async Function Expression
 
 Class/Interface methods, functions, and arrow function expressions can all be modified using the async keyword.
 
-As of the TypeScript Language Specification, functions are defined using the following expressions:
+As of the TypeScript 0.9 Language Specification, functions are defined using the following expressions:
 
 ```
 FunctionExpression:
@@ -62,10 +75,10 @@ ArrowFormalParameters:
   Identifier
 
 CallSignature:
-  ( ParameterList? ) ReturnTypeAnnotation?
+  TypeParameters? ( ParameterList? ) TypeAnnotation?
 ```
 
-Async/Await will extend this syntax with:
+Async/Await would extend this syntax with:
 
 ```
 AsyncFunctionExpression:
@@ -73,39 +86,52 @@ AsyncFunctionExpression:
   async ArrowFunctionExpression
 ```
 
-### Typings
+An async function can have three possible return types:
+* `Promise<T>`
+  * T is the return type of the function
+  * Note that T can be `void` if the async function contains no return expression.
+  * If the type is not specified, it will be inferred like any other function in TypeScript
+* `void`
+  * Must be set explicitly
+  * Not recommended
 
-If a type is not specified for the function, it will default to a type of Promise<any>. A
+`void` is provided as a possible return type to allow usage of the await keyword within functions that must not
+return a value.
 
-## Principles of Implementation
+An async function defaults to a return type of `Promise<T>`. `T` is inferred from the return expressions in the
+function, just like any other function in TypeScript.
 
-### Implicit Promise Interface
-Because we want to only `await` those values which match the Promises/A+ spec, we will be using the following
-interface to judge whether the object matches the spec:
+An async function can contain zero or more `await` expressions, which are covered in the next section. If a
+function is labeled as async but contains no `await` expression, it will run synchronously and the compiler will
+give a warning indicating as much.
 
-```ts
-interface Promise<T> {
-     then<U>(onFulfilled?: (value?: T) => U, onRejected?: (reason?: any) => any): Promise<U>;
-}
+### Await Expression
+
+`await` is only allowed within functions marked as `async`
+
+An `await` looks like the following:
+
+```
+AwaitAssignmentExpression:
+  VarExpr = AwaitExpression
+
+AwaitExpression:
+  await Expression
 ```
 
-Consider this an *implicit* interface. It does not need to be included in your code, but any value that you wish to
-await on must implement this interface. The TypeScript compiler will ensure this correctness.
+An awaited expression MUST evaluate to a `Promise<T>` type. For the `AwaitAssignmentExpression`, `VarExpr` will
+receive a value of type `T`, i.e. the promised value from the Promise.
 
-### `onFulfilled` as the continuation
+An AwaitExpression will keep any subsequent expressions from evaluating until after the awaited Promise is
+fulfilled.
 
-The basic idea is that whatever statements follow an `await` statement is the callback to that await statement.
+## Code Generation
 
-Consider the following hypothetical async/await enabled TypeScript code:
-```ts
-async 
-```
-
-## Single Statement `await`s
+### Single Statement `await`s
 
 TODO
 
-## `await` In Boolean Statements
+### `await` In Boolean Statements
 
 TODO
 
