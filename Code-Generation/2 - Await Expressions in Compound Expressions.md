@@ -9,12 +9,10 @@ async function getChildrensDiscountAsync(child: Customer, couponId: number) {
   return await getCouponValueAsync(couponId) + maxDiscount + child.getAge() * -(await getDiscountRateAsync());
 }
 ```
-We have many expressions being acted on by non-short-circuiting binary operators.
-
-TypeScript binary operators that we will consider non-short-circuiting are:
-```
-*,/,%,-,<<,>>,>>>,&,^,|,+,<,>,<=,>=,==,!=,===,!==
-```
+Although it looks like one long statement, it can be broken up into several smaller statements, looking at each
+operation in turn. Binary operators will completely evaluate the left operand and then completely evaluate the right
+operand. Unary operators evaluate after the expression they are modifying. By following order of operations, we can
+determine the order the functions must be evaluated in.
 
 We will first chunk up this statement according to order of operations into just the individual operations.
 
@@ -24,47 +22,71 @@ async function getChildrensDiscountAsync(child: Customer, couponId: number) {
 }
 ```
 
-We will now execute each of these in proper order:
+Now, for each operation that contains an `await` keyword, we will execute each function in order and store the output
+of each to a local variable before evaluating the final expression. See this in the next example:
+
 ```ts
 async function getChildrensDiscountAsync(child: Customer, couponId: number) {
   var _0 = await getCouponValueAsync(couponId);
   var _1 = getMaxDiscount();
-  var _2 = _0 + _1;
+  var _2 = _0 + _1; // addition of coupon value and max discount
   var _3 = child.getAge();
   var _4 = await getDiscountRateAsync();
-  var _5 = -_4;
-  var _6 = _3 * _5;
-  return _2 + _6;
+  var _5 = -_4; // negative of discount rate
+  var _6 = _3 * _5; // reduction of discount based on age
+  return _2 + _6; // discount less reduction
 }
 ```
 
-In order to preserve order of operations, we will evaluate all expressions that are not binary operations in order.
-The binary operators listed above are the only ones we can ensure have no side effects.
+Which will ultimately be transformed to:
+```js
+function getChildrensDiscountAsync(child, couponId) {
+  var _0, _1, _2, _3, _4, _5, _6;
+  
+  return getCouponValueAsync(couponId).then(function(_7) {
+    _0 = _7;
+    _1 = getMaxDiscount();
+    _2 = _0 + _1; // addition of coupon value and max discount
+    _3 = child.getAge();
+    return getDiscountRateAsync();
+  }).then(function(_8) {
+    _4 = _8;
+    _5 = -_4; // negative of discount rate
+    _6 = _3 * _5; // reduction of discount based on age
+    return _2 + _6; // discount less reduction
+  });
+}
+```
 
-In order to follow the procedure described in the previous section, we must transform the function to:
+This also works with awaits inside function calls. Note that literals can be evaluated in place since they don't have
+potential side effects.
 
 ```ts
-async function getChildrensDiscountAsync() {
-  var _0 = getRegularPrice()
-  var _0 = await getRegularPrice();
-  var _1 = await getCustomerAgeAsync();
-  return _0 - _1 * 0.4;
+async function sayChildsDiscountAsync(): void {
+  console.log("Your discount is: " + await getChildrensDiscountAsync(yourChild, yourCoupon));
 }
 ```
 
-Although this seems obvious, the functions need to be listed in the correct order of evaluation. So, the function
-calls on the left will be executed first. This includes synchronous expressions, too.
+Which transforms to:
+```ts
+async function sayChildsDiscountAsync(): void {
+  var _0 = await getChildrensDiscountAsync(yourChild, yourCoupon);
+  var _1 = "Your discount is: " + _0;
+  console.log(_1);
+}
+```
 
-Using this, we can transform the function as in the previous example:
+Which ultimately becomes:
 ```js
-function getChildrensDiscountAsync() {
+function sayChildsDiscountAsync() {
   var _0, _1;
-  return getRegularPriceAsync().then(function(_2) {
+  getChildrensDiscountAsync(yourChild, yourCoupon).then(function(_2) {
     _0 = _2;
-    return getCustomerAgeAsync();
-  }).then(function(_3)) {
-    _1 = _3; 
-    return _0 - _1 * 0.4;
-  }
+    _1 = "Your discount is: " + _0;
+    console.log(_1);
+  })
 }
 ```
+
+On an unrelated note that the function above does not return the Promise because it is marked as void. Because it does
+not return a Promise, it cannot be awaited.
