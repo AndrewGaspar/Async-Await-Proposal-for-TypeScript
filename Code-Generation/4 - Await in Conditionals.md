@@ -63,7 +63,7 @@ async function getBlogPostCount() {
         condition: () => cachedCount,
         body: async () => 
           { 
-            await getBlogPosts();
+            posts = await getBlogPosts();
             return (cachedCount = posts.length);
           }
       },
