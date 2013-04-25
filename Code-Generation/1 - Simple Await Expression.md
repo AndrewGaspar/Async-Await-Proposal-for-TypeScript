@@ -12,6 +12,9 @@ The entire basis of our transformations of async functions is based on this proc
    same Promise.
 5. Repeat step 3 through 5 until reaching the end of the function.
 
+All following sections will focus on transforming familiar data structures into a pattern that can be evaluated using
+this procedure.
+
 Take a look at the following script:
 ```ts
 import Q = module('q');
