@@ -57,6 +57,7 @@ async function shouldIGiveAMouseACookie() {
 ```
 
 The example above has an example of all 6 awaitable possibilities:
+
 b1 && b2
 * Async Possibilities
   * await b1 && b2
