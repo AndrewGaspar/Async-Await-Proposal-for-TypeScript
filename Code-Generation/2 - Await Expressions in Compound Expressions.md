@@ -90,3 +90,6 @@ function sayChildsDiscountAsync() {
 
 On an unrelated note that the function above does not return the Promise because it is marked as void. Because it does
 not return a Promise, it cannot be awaited.
+
+In summary, compound expressions can be transformed to the simpler pattern discussed in section 1. Unfortunately,
+short-circuiting boolean operators will throw a wrench in the works.
