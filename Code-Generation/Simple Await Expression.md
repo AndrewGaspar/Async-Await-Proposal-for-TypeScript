@@ -1,4 +1,4 @@
-# Single Statement `await`s
+# Simple Await Expression
 
 The entire basis of our transformations of async functions is based on this procedure:
 
