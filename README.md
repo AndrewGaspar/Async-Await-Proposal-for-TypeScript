@@ -53,7 +53,7 @@ a success:
   2. [Async Function Expression](https://github.com/AndrewGaspar/Async-Await-Proposal-for-TypeScript/blob/master/Expressions/Async%20Function%20Expression.md)
   3. [Await Expression](https://github.com/AndrewGaspar/Async-Await-Proposal-for-TypeScript/blob/master/Expressions/Await%20Expression.md)
 2. Code Generation
-  1. [Simple Await Expression](https://github.com/AndrewGaspar/Async-Await-Proposal-for-TypeScript/blob/master/Code-Generation/Simple%20Await%20Expression.md)
-  2. [Await Expressions in Compound Expressions](https://github.com/AndrewGaspar/Async-Await-Proposal-for-TypeScript/blob/master/Code-Generation/Await%20Expressions%20in%20Compound%20Expressions.md)
-  3. [Await in Boolean Expressions](https://github.com/AndrewGaspar/Async-Await-Proposal-for-TypeScript/blob/master/Code-Generation/3)%20Await%20in%20Boolean%20Expressions.md)
-  4. [Await in Loops](https://github.com/AndrewGaspar/Async-Await-Proposal-for-TypeScript/blob/master/Code-Generation/4)%20Await%20in%20Loops.md)
+  1. [Simple Await Expression](https://github.com/AndrewGaspar/Async-Await-Proposal-for-TypeScript/blob/master/Code-Generation/1%20-%20Simple%20Await%20Expression.md)
+  2. [Await Expressions in Compound Expressions](https://github.com/AndrewGaspar/Async-Await-Proposal-for-TypeScript/blob/master/Code-Generation/2%20-%20Await%20Expressions%20in%20Compound%20Expressions.md)
+  3. [Await in Boolean Expressions](https://github.com/AndrewGaspar/Async-Await-Proposal-for-TypeScript/blob/master/Code-Generation/3%20-%20Await%20in%20Boolean%20Expressions.md)
+  4. [Await in Loops](https://github.com/AndrewGaspar/Async-Await-Proposal-for-TypeScript/blob/master/Code-Generation/4%20-%20Await%20in%20Loops.md)
