@@ -1,4 +1,4 @@
-# AwaitExpressions in Compound Expressions
+# Await Expressions in Compound Expressions
 
 This section will deal with all compound expressions except those that use the `&&` or `||` operator.
 
