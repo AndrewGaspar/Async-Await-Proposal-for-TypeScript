@@ -57,22 +57,23 @@ async function shouldIGiveAMouseACookie() {
 ```
 
 The example above has an example of all 6 awaitable possibilities:
-* b1 && b2
-  * Async Possibilities
-    * await b1 && b2
-    * b1 && await b2
-    * await b1 && await b2
-  * Possible Outcomes
-    * if b1 is truthy, returns b2
-    * if b1 is falsy, returns b1
-* b1 || b2
-  * Async Possibilities
-    * await b1 || b2
-    * b1 || await b2
-    * await b1 || await b2
-  * Possible Outcomes
-    * If b1 is truthy, returns b1
-    * If b1 is falsy, returns b2
+b1 && b2
+* Async Possibilities
+  * await b1 && b2
+  * b1 && await b2
+  * await b1 && await b2
+* Possible Outcomes
+  * if b1 is truthy, returns b2
+  * if b1 is falsy, returns b1
+
+b1 || b2
+* Async Possibilities
+  * await b1 || b2
+  * b1 || await b2
+  * await b1 || await b2
+* Possible Outcomes
+  * If b1 is truthy, returns b1
+  * If b1 is falsy, returns b2
 
 In this expression, `b1` and `b2` represent expressions. When pre-pended by await, it implies an expression evaluating to a promise. Note that all of these expressions will ultimately evaluate to a promise.
 
