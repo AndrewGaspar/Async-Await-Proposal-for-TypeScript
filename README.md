@@ -21,9 +21,11 @@ Some goals of this proposal:
 * Fairly readable output
 
 Organization:
-* Rather that showing the compiled JavaScript output with each TypeScript+Async/Await sample, I will show the sample
-  compiled to vanilla TypeScript, hopefully to make it easier to grok. This way I don't add needless complexity by
-  showing JavaScript versions of unrelated TypeScript structures, like compiled class and module expressions.
+* Start with a simple syntax definition. I.e. this is how the code will look like when you write it.
+* Go through each situation where the await keyword introduces complexity in implementation from most basic to most
+  advanced.
+* Each section will break down the syntax until it fits a pattern shown in a previous section or is valid current
+  TypeScript.
 
 An example from C#
 ------------------
@@ -98,8 +100,9 @@ An async function can have three possible return types:
 `void` is provided as a possible return type to allow usage of the await keyword within functions that must not
 return a value.
 
-An async function defaults to a return type of `Promise<T>`. `T` is inferred from the return expressions in the
-function, just like any other function in TypeScript.
+An async function defaults to a return type of `Promise<T>`. The return statements in the function can return either
+an entity of type `Promise<T>` or `T`. `T` can be inferred from the return expressions in the function, just like any
+other function in TypeScript.
 
 An async function can contain zero or more `await` expressions, which are covered in the next section. If a
 function is labeled as async but contains no `await` expression, it will run synchronously and the compiler will
@@ -130,10 +133,11 @@ fulfilled.
 ### Non-trivial Language Features to Preserve
 
 * Variable declaration hoisting must remain intact.
-* Short circuiting boolean operators
-* Conditions
+* Binary operations
+* Short-circuiting boolean operators
 * Conditional Expressions
 * Loops
+* Try-catch
 
 ### Single Statement `await`s
 
@@ -156,13 +160,9 @@ import _ = module('underscore');
 
 async function getAllAuthorCommentsAsync() {
   var posts = await getBlogPostsAsync();
-  
-  var commentRequests = posts.map(function(post) { return post.getCommentsAsync(); });
-  
-  var authors = posts.map(function(post) { return post.author; });
-  
+  var commentRequests = posts.map((post) => post.getCommentsAsync());
+  var authors = _.uniq(posts.map((post) => post.author));
   var commentLists = await Q.all(commentRequests);
-  
   var comments = _.flatten(commentLists);
   
   return comments.filter((comment) => 
@@ -234,30 +234,65 @@ function getAllAuthorCommentsAsync() {
 }
 ```
 
-Now that we have manually hoisted all of the variables in the async function, the function should operate as
-expected. Notice we provide a garbage name, like `_0`, as an argument for each `onFulfilled` function. A counter
-must be kept of how many of these temporary references are made. This is done because it is intended for a single
-use but will not be used again.
+Now that we have manually hoisted all of the variable declarations in the async function, the function should
+operate as expected. Notice we provide a garbage name, like `_0`, as an argument for each `onFulfilled` function.
+A counter must be kept of how many of these temporary references are made. This is done because it is intended for a
+single use but will not be used again.
 
-### AwaitExpression as Part of a Larger Statement
+### AwaitExpressions in Larger Statements Excluding Short-Circuiting Binary Operators
 
 Consider this expression:
 
 ```ts
-async function getChildrensDiscountAsync() {
-  return await getRegularPriceAsync() - await getCustomerAgeAsync() * 0.4;
+async function getChildrensDiscountAsync(child: Customer, couponId: number) {
+  return await getCouponValueAsync(couponId) + maxDiscount + child.getAge() * -(await getDiscountRateAsync());
 }
 ```
+We have many expressions being acted on by non-short-circuiting binary operators.
+
+TypeScript binary operators that we will consider non-short-circuiting are:
+```
+*,/,%,-,<<,>>,>>>,&,^,|,+,<,>,<=,>=,==,!=,===,!==
+```
+
+We will first chunk up this statement according to order of operations into just the individual operations.
+
+```ts
+async function getChildrensDiscountAsync(child: Customer, couponId: number) {
+  return ((await getCouponValueAsync(couponId) + getMaxDiscount()) + (child.getAge() * -(await getDiscountRateAsync())));
+}
+```
+
+We will now execute each of these in proper order:
+```ts
+async function getChildrensDiscountAsync(child: Customer, couponId: number) {
+  var _0 = await getCouponValueAsync(couponId);
+  var _1 = getMaxDiscount();
+  var _2 = _0 + _1;
+  var _3 = child.getAge();
+  var _4 = await getDiscountRateAsync();
+  var _5 = -_4;
+  var _6 = _3 * _5;
+  return _2 + _6;
+}
+```
+
+In order to preserve order of operations, we will evaluate all expressions that are not binary operations in order.
+The binary operators listed above are the only ones we can ensure have no side effects.
 
 In order to follow the procedure described in the previous section, we must transform the function to:
 
 ```ts
 async function getChildrensDiscountAsync() {
-  var _0 = await getRegularPriceAsync();
+  var _0 = getRegularPrice()
+  var _0 = await getRegularPrice();
   var _1 = await getCustomerAgeAsync();
   return _0 - _1 * 0.4;
 }
 ```
+
+Although this seems obvious, the functions need to be listed in the correct order of evaluation. So, the function
+calls on the left will be executed first. This includes synchronous expressions, too.
 
 Using this, we can transform the function as in the previous example:
 ```js
