@@ -1,5 +1,7 @@
 # `await` in conditionals
 
+This section will cover all if-else blocks that contain `await` statements, either in the condition or the block of the conditional.
+
 Consider the following function:
 
 ```ts
@@ -34,13 +36,41 @@ The basic idea is that an array of objects will be passed to the arguments of `_
 
 ```js
 function __ifElse(conditionBlocks) {
-  var ifBlock = condit
-  for(var i = 0; i < arguments.length; i++) {
-    var ifBlock = arguments[i];
-    
-    if(!ifBlock.condition || ifBlock.condition()) {
-      
+  if(!conditionBlocks.length) return __promisify(); // if none of if statements ran return promise
+  
+  var ifBlock = conditionBlocks[0];
+  if(conditionBlocks.length === 1) return __promisify(ifBlock.body());
+  
+  return __promisify(ifBlock.condition()).then(function(truthy) {
+    if(truthy) {
+      return __promisify(ifBlock.body()).then(function(value) {
+        
+      });
     }
-  }
+    else return __ifElse(conditionBlocks.slice(1, conditionBlocks.length));
+  });
+}
+```
+
+Transforming our example above:
+```
+async function getBlogPostCount() {
+  var posts;
+  
+  return __ifElse(
+    [
+      {
+        condition: () => cachedCount,
+        body: async () => 
+          { 
+            await getBlogPosts();
+            return (cachedCount = posts.length);
+          }
+      },
+      {
+        body: () => cachedCount
+      }
+    ]
+  );
 }
 ```
