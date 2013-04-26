@@ -6,7 +6,7 @@ Consider the following function:
 
 ```ts
 async function getBlogPostCount() {
-  if(cachedCount) {
+  if(!cachedCount) {
     var posts = await getBlogPosts();
     return (cachedCount = posts.length);
   } else {
@@ -21,7 +21,7 @@ Let's hoist our variable declaration while we're at it:
 async function getBlogPostCount() {
   var posts;
 
-  if(cachedCount) {
+  if(!cachedCount) {
     posts = await getBlogPosts();
     return (cachedCount = posts.length);
   } else {
@@ -38,58 +38,97 @@ The basic idea is that an array of `conditionals` will be passed to the argument
 interface __conditional {
   condition: () => any; // can be promise, but not required
   body: () => any; // can be Promise, but not required
-  shouldReturn?: boolean;
+  returns?: boolean;
 }
 
 interface __ifElse {
+  (conditionals: __conditional[]): Promise;
+  (conditionals: __conditional[], continuation: () => Promise): Promise;
   (conditionals: __conditional[], continuation: () => any): Promise;
 }
 ```
 
-```js
-function __ifElse(conditionals, continuation) {
-  if(!conditionals.length) return __promisify(); // if none of the blocks evaluated to true, return true.
-  
-  var ifBlock = conditionals[0];
-  if(conditionals.length === 1 && !ifBlock.condition) return __promisify(ifBlock.body());
-  
-  return __promisify(ifBlock.condition()).then(function(truthy) {
-    if(truthy) {
-      return __promisify(ifBlock.body()).then(function(value) {
-        if(!ifBlock.shouldReturn) {
-          return __promisify(continuation());
-        } else return;
-      });
-    }
-    else return __ifElse(conditionals.slice(1, conditionals.length));
-  });
-}
-```
+To see the implementation of `__ifElse`, see [ifelse.js](/Emit-Functions/ifelse.js).
 
 Transforming our example above:
-```js
-function getBlogPostCount() {
+```ts
+async function getBlogPostCount() {
   var posts;
   
-  return __ifElse(
+  return await __ifElse(
     [
       {
-        condition: function() { return cachedCount; },
-        body: function() { 
-            return getBlogPosts().then(function(_0) {
-              posts = _0;
-              return (cachedCount = posts.length);
-            });
-          },
-        shouldReturn: true
+        condition: () => !cachedCount,
+        body: async () => { posts = await getBlogPosts(); return (cachedCount = posts.length); },
+        returns: true
       },
       {
-        body: function() { return cachedCount; },
-        shouldReturn: true
+        body: () => cachedCount,
+        returns: true
       }
     ]
   );
 }
 ```
 
-This example is easy because all code paths have a return statement. Unfortunately, things get a little hairier when only some of the 
+We already know how to compile a function like this, so we'll stop there. Notice the continuation function was
+omitted since the if-else block was the last portion of the file.
+
+This example is easy because all code paths have a return statement and there's no continuation. Unfortunately, things get a little hairier when only some of the code paths return.
+
+```ts
+async function payBill(customer, meals) {
+  var totalPrice = _.reduce(await Q.all(meals.map((meal) => meal.getPrice())), (price, memo) => cost + memo);
+  
+  var payment = totalPrice;
+  if(customer.methodOfPayment instanceof CreditCard) {
+    await customer.methodOfPayment.credit(myAccount, payment);
+    return;
+  } else if (customer.methodOfPayment instanceof Cash) {
+    payment -= (payment < customer.methodOfPayment.onHand) ? 0 : customer.methodOfPayment.onHand;
+    
+    customer.methodOfPayment.give(me, payment);
+  }
+  
+  var difference = totalPrice - payment;
+  var hours = difference / MINIMUM_WAGE;
+  await customer.cleanDishes(hours);
+}
+```
+
+Transforming this as in the first example, we get:
+
+```ts
+async function payBill(customer, meals) {
+  var totalPrice, payment, difference, hours;
+  
+  totalPrice = _.reduce(await Q.all(meals.map((meal) => meal.getPrice())), (price, memo) => cost + memo);
+  
+  payment = totalPrice;
+  return await __ifElse(
+    [
+      {
+        condition: () => customer.methodOfPayment instanceof CreditCard,
+        body: async function() { 
+          await customer.methodOfPayment.credit(myAccount, payment); 
+          return; 
+        },
+        returns: true
+      },
+      {
+        condition: () => customer.methodOfPayment instanceof Cash,
+        body: function() {
+          payment -= (payment < customer.methodOfPayment.onHand) ? 0 : customer.methodOfPayment.onHand;
+    
+          customer.methodOfPayment.give(me, payment);
+        }
+      }
+    ], async function() {
+      var difference = totalPrice - payment;
+      var hours = difference / MINIMUM_WAGE;
+      await customer.cleanDishes(hours);
+    });
+}
+```
+
+Again, we know how to reduce this at this point, so we will leave it here.
