@@ -12,7 +12,7 @@ function __ifElse(conditionals, continuation) {
     function returnPromise(value) {
         //  If ifBlock contained a return statement or there is no continuation, the return value of the body
         //  should be returned. Otherwise the continuation promise should be returned.
-        return __promisify((ifBlock.shouldReturn || !continuation) ? value : continuation());
+        return __promisify((ifBlock.returns || !continuation) ? value : continuation());
     }
     // If there are no conditions left to check, run the continuation and return a promise for it.
     if (!conditionals.length) {
