@@ -15,7 +15,10 @@ function __ifElse(conditionals, continuation) {
         return __promisify((ifBlock.shouldReturn || !continuation) ? value : continuation());
     }
     // If there are no conditions left to check, run the continuation and return a promise for it.
-    if (!conditionals.length) return __promisify(continuation());
+    if (!conditionals.length) {
+        if (continuation) return __promisify(continuation());
+        return;
+    }
 
     var ifBlock = conditionals[0]; // get first if block
 
