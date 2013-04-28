@@ -32,7 +32,7 @@ async function getBlogPostCount() {
 
 In this function, one branch results in `await` where as the other returns a value directly. We need to handle the case where this happens. A new helper function is needed!
 
-The basic idea is that an array of `conditionals` will be passed to the arguments of `__if`. Each object will have a `condition` property that is a function that returns a value or a promise for a value and a `body` property that is a function that contains the conditional body. All objects except the last require a condition (else block). Additionally, each object will have a `shouldReturn` flag that is set to true if the statement contains a return. Finally, a promise returning `continuation` function is passed in. This represents all operations that follow the if-else block.
+The basic idea is that an array of `conditionals` will be passed to the arguments of `__if`. Each object will have a `condition` property that is a function that returns a value or a promise for a value and a `body` property that is a function that contains the conditional body. All objects except the last require a condition (else block). Finally, a promise returning `continuation` function is passed in. This represents all operations that follow the if-else block.
 
 ```ts
 interface __conditional {
@@ -42,9 +42,7 @@ interface __conditional {
 }
 
 interface __ifElse {
-  (conditionals: __conditional[]): Promise;
-  (conditionals: __conditional[], continuation: () => Promise): Promise;
-  (conditionals: __conditional[], continuation: () => any): Promise;
+  (conditionals: __conditional[], continuation: () => any, parentReturn?: (value: any) => void): Promise;
 }
 ```
 
@@ -59,12 +57,10 @@ async function getBlogPostCount() {
     [
       {
         condition: () => !cachedCount,
-        body: async () => { posts = await getBlogPosts(); return (cachedCount = posts.length); },
-        returns: true
+        body: async (__return) => { posts = await getBlogPosts(); __return(cachedCount = posts.length); },
       },
       {
-        body: () => cachedCount,
-        returns: true
+        body: (__return) => { __return(cachedCount) }
       }
     ]
   );
@@ -109,11 +105,10 @@ async function payBill(customer, meals) {
     [
       {
         condition: () => customer.methodOfPayment instanceof CreditCard,
-        body: async () => { 
+        body: async (__return) => { 
           await customer.methodOfPayment.credit(myAccount, payment); 
-          return; 
-        },
-        returns: true
+          __return(); 
+        }
       },
       {
         condition: () => customer.methodOfPayment instanceof Cash,
