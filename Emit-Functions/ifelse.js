@@ -26,7 +26,7 @@ function __ifElse(conditionals, continuation, parentReturn) {
     
     // If there are no conditions left to check, run the continuation and return a promise for it.
     if (!conditionals.length) {
-        return (continuation) ? __promisify(continuation()) : undefined;
+        return __promisify((continuation) ? continuation() : undefined);
     }
 
     var ifBlock = conditionals[0]; // get first if block
