@@ -37,7 +37,7 @@ The basic idea is that an array of `conditionals` will be passed to the argument
 ```ts
 interface __conditional {
   condition: () => any; // can be promise, but not required
-  body: () => any; // can be Promise, but not required
+  body: () => any; // can return Promise, or void
   body: (__return: (value: any) => void) => any; // If some branches of conditional return from the async function
 }
 
