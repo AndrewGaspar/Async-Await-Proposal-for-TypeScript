@@ -37,8 +37,8 @@ The basic idea is that an array of `conditionals` will be passed to the argument
 ```ts
 interface __conditional {
   condition: () => any; // can be promise, but not required
+  condition: (return: (value: any) => void) => any; // can be promise, but not required
   body: () => any; // can be Promise, but not required
-  returns?: boolean;
 }
 
 interface __ifElse {
@@ -109,7 +109,7 @@ async function payBill(customer, meals) {
     [
       {
         condition: () => customer.methodOfPayment instanceof CreditCard,
-        body: async function() { 
+        body: async () => { 
           await customer.methodOfPayment.credit(myAccount, payment); 
           return; 
         },
@@ -117,13 +117,13 @@ async function payBill(customer, meals) {
       },
       {
         condition: () => customer.methodOfPayment instanceof Cash,
-        body: function() {
+        body: () => {
           payment -= (payment < customer.methodOfPayment.onHand) ? 0 : customer.methodOfPayment.onHand;
     
           customer.methodOfPayment.give(me, payment);
         }
       }
-    ], async function() {
+    ], async () => {
       var difference = totalPrice - payment;
       var hours = difference / MINIMUM_WAGE;
       await customer.cleanDishes(hours);
