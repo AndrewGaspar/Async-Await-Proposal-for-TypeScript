@@ -40,7 +40,9 @@ namespace AsyncAwesome
 
         public async Task<int> getValueAsync()
         {
-            return await Task.Run(() => Value); // asynchronous getter
+            if(Value % 2 == 0)
+                return await Task.Run(() => Value); // asynchronous getter
+            else return Value;
         }
 
         private async static Task AsyncMain()
