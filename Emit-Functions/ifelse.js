@@ -16,7 +16,7 @@ function __ifElse(conditionals, continuation, parentReturn) {
 
         if (truthy) {
             var bodyEval = ifBlock.body(function (value) { // block bodies call this rather than using the return keyword
-                parentReturn(value);
+                if(parentReturn) parentReturn(value);
                 returnValue = value;
                 returning = true;
             });
