@@ -2,28 +2,30 @@ function __loop(conditional, continuation, parentReturn, isDo) {
     var returning = false,
         returnValue;
 
-    function continuing() {
-        return __promisify((returning) ? returnValue : next());
-    }
-
     function next() {
-        var conditionEval = skipConditionEval || loop.condition();
-        skipConditionEval = false;
+        function __continue() {
 
-        return __promisify(conditionEval).then(function (truthy) {
+        }
 
-
+        function evalCondition(truthy) {
             if (truthy) {
                 if(loop.body) {
                     var bodyEval = loop.body(function (value) {
                         if (parentReturn) parentReturn(value);
                         returnValue = value;
                         returning = true;
+                    }, function () {
+                        skipConditionEval = true;
                     });
-                    
+                    return 
                 }
-            } else return __promisify(continuation());
-        });
+            } else return __promisify((continuation) ? continuation() : undefined);
+        }
+
+        var conditionEvaluation = skipConditionEval || loop.condition();
+        skipConditionEval = false;
+
+        return __isPromise(conditionEvaluation) ? conditionEvaluation.then(evalCondition) : evalCondition(conditionEvaluation);
     }
 
     var skipConditionEval = !!isDo;
