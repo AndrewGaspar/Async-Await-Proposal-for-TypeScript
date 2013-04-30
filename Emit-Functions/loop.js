@@ -32,3 +32,5 @@ function __loop(conditional, continuation, parentReturn, isDo) {
 
     return next();
 }
+
+module.export = __loop;

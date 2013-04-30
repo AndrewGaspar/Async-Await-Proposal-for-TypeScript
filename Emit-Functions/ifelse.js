@@ -1,3 +1,6 @@
+var __promisify = require("./promisify").__promisify;
+
+
 function __ifElse(conditionals, continuation, parentReturn) {
     
 
@@ -37,3 +40,5 @@ function __ifElse(conditionals, continuation, parentReturn) {
 
     return (__isPromise(condition)) ? condition.then(checkCondition) : checkCondition(condition);
 }
+
+module.exports = __ifElse;

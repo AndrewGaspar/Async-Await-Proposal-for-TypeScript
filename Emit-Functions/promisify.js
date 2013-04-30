@@ -1,18 +1,3 @@
-var __simpleTSPromises = this.__simpleTSPromises || (function() {
-  function __deferred() {
-  }
-
-  function __defer() {
-  }
-
-  function __promise() {
-  }
-
-  function __promisify() {
-  }
-})();
-
-
 var __deferred = this.__deferred || function() {
   return {
     
@@ -24,11 +9,11 @@ var __defer = this.__defer || function() {
 }
 
 var __promise = this.__promise || function() {
-  this.
+  
 }
 
 var __promisify = this.__promisify || function(value) {
-  if(value && value.then) return value;
+  if(__isPromise(value)) return value;
   else {
     return {
       then: function(onFulfilled, onRejected) {
@@ -44,4 +29,14 @@ var __promisify = this.__promisify || function(value) {
       }
     };
   }
+}
+
+var __isPromise = this.__isPromise || function (obj) {
+    return obj && obj.then;
+}
+
+module.exports = {
+    __defer: __defer,
+    __promisify: __promisify,
+    __isPromise: __isPromise
 }
