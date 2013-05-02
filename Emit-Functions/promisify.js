@@ -11,9 +11,45 @@ module.exports = (function () {
         else return function (f) { setTimeout(f, 0); };
     })();
 
-    function queueFunction(f) {
-        /// TODO: Make this more robust
-        deferFunction(f);
+    function _queueAndCallBack(func, cb) {
+        deferFunction(function () {
+            func();
+            cb();
+        });
+    }
+
+    function functionQueue() {
+        var funcs = [],
+            i = 0,
+            started = false;
+
+        function iterator() {
+            _queueAndCallBack(funcs[i++], function () {
+                if (i < funcs.length) {
+                    iterator();
+                } else {
+                    funcs = [];
+                    i = 0;
+                }
+            });
+        }
+
+        return {
+            enqueue: function (func) {
+                if (isFunction(func)) {
+                    funcs.push(func);
+                    if (started && funcs.length === 1) {
+                        iterator();
+                    }
+                }
+            },
+            start: function () {
+                if (!started) {
+                    started = true;
+                    if (funcs.length > 0) iterator();
+                }
+            }
+        }
     }
 
     var Deferred = (function () {
@@ -24,8 +60,8 @@ module.exports = (function () {
             this._isResolved = false;
             this._isRejected = false;
 
-            this._fulfillQueue = [];
-            this._rejectQueue = [];
+            this._fulfillQueue = functionQueue();
+            this._rejectQueue = functionQueue();
 
             this.promise = {
                 then: function (onFulfilled, onRejected) {
@@ -61,7 +97,7 @@ module.exports = (function () {
 
                     this.promise._value = val;
 
-                    this._emptyQueues();
+                    this._fulfillQueue.start();
                 }
             },
             _onReject: function (rea) {
@@ -71,32 +107,14 @@ module.exports = (function () {
 
                     this.promise._reason = rea;
 
-                    this._emptyQueues();
+                    this._rejectQueue.start();
                 }
             },
             _queueFulfill: function (fulfillCallback) {
-                this._fulfillQueue.push(fulfillCallback);
-                this._emptyQueues();
+                this._fulfillQueue.enqueue(fulfillCallback);
             },
             _queueReject: function (rejectCallback) {
-                this._rejectQueue.push(rejectCallback);
-                this._emptyQueues();
-            },
-            _emptyQueues: function () {
-                if (!this._isPending) {
-                    if (this._isResolved) {
-                        for (var i = 0; i < this._fulfillQueue.length; i++) {
-                            deferFunction(this._fulfillQueue[i]);
-                        }
-                    } else if (this._isRejected) {
-                        for (var i = 0; i < this._rejectQueue.length; i++) {
-                            deferFunction(this._rejectQueue[i]);
-                        }
-                    }
-
-                    this._fulfillQueue = [];
-                    this._rejectQueue = [];
-                }
+                this._rejectQueue.enqueue(rejectCallback);
             }
         }
 
