@@ -2,10 +2,10 @@ var __promisify = require("./promisify").__promisify;
 
 
 function __ifElse(conditionals, continuation, parentReturn) {
-    
+
 
     function checkCondition(truthy) {
-        //  If the condition evaluates to true, run the body of the function then skip to the 
+        //  If the condition evaluates to true, run the body of the function then skip to the
         //  continuation. otherwise call __ifElse recursively with the first item dequeued.
 
         var returning = false,
@@ -26,7 +26,7 @@ function __ifElse(conditionals, continuation, parentReturn) {
             return (__isPromise(bodyEval)) ? bodyEval.then(returnPromise) : returnPromise();
         } else return __ifElse(conditionals.slice(1, conditionals.length), continuation, parentReturn);
     }
-    
+
     // If there are no conditions left to check, run the continuation and return a promise for it.
     if (!conditionals.length) {
         return __promisify((continuation) ? continuation() : undefined);

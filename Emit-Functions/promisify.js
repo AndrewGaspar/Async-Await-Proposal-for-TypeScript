@@ -70,7 +70,16 @@ module.exports = (function () {
                     var def2 = defer();
 
                     def._queueFulfill(function () {
-                        def2.resolve(isFunction(onFulfilled) ? onFulfilled(_this._value) : _this._value);
+                        if (isFunction(onFulfilled)) {
+                            try {
+                                var result = onFulfilled(_this._value);
+                                def2.resolve(result);
+                            } catch (e) {
+                                def2.reject(e);
+                            }
+                        } else {
+                            def2.resolve(_this._value);
+                        }
                     });
 
                     def._queueReject(function () {
