@@ -103,11 +103,12 @@ module.exports = (function () {
         deferred.prototype = {
             resolve: function (value) {
                 var _this = this;
-                (isPromise(value)) ? value.then(function (v) { _this._onResolve(v) }) : this._onResolve(value);
+                (isPromise(value)) ? value.then(function (v) { _this._onResolve(v) }, function(r) { _this._onReject(r); }) : this._onResolve(value);
             },
             reject: function (reason) {
                 var _this = this;
-                (isPromise(reason)) ? reason.then(function (r) { _this._onReject(r); }) : this._onReject(reason);
+                //(isPromise(reason)) ? reason.then(function (r) { _this._onReject(r); }) : 
+                this._onReject(reason);
             },
             _onResolve: function (val) {
                 if (this._isPending) {
