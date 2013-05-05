@@ -83,7 +83,16 @@ module.exports = (function () {
                     });
 
                     def._queueReject(function () {
-                        def2.reject(isFunction(onRejected) ? onRejected(_this._reason) : _this._reason);
+                        if (isFunction(onRejected)) {
+                            try {
+                                var error = onRejected(_this._reason);
+                                def2.resolve(error);
+                            } catch (e) {
+                                def2.reject(e);
+                            }
+                        } else {
+                            def2.reject(_this._reason);
+                        }
                     });
 
                     return def2.promise;
@@ -97,7 +106,8 @@ module.exports = (function () {
                 (isPromise(value)) ? value.then(function (v) { _this._onResolve(v) }) : this._onResolve(value);
             },
             reject: function (reason) {
-                (isPromise(reason)) ? reason.then(this._onReject) : this._onReject(reason);
+                var _this = this;
+                (isPromise(reason)) ? reason.then(function (r) { _this._onReject(r); }) : this._onReject(reason);
             },
             _onResolve: function (val) {
                 if (this._isPending) {
@@ -105,7 +115,8 @@ module.exports = (function () {
                     this._isPending = false;
 
                     this.promise._value = val;
-
+                    
+                    this._rejectQueue = null;
                     this._fulfillQueue.start();
                 }
             },
@@ -116,14 +127,15 @@ module.exports = (function () {
 
                     this.promise._reason = rea;
 
+                    this._fulfillQueue = null;
                     this._rejectQueue.start();
                 }
             },
             _queueFulfill: function (fulfillCallback) {
-                this._fulfillQueue.enqueue(fulfillCallback);
+                if(this._fulfillQueue) this._fulfillQueue.enqueue(fulfillCallback);
             },
             _queueReject: function (rejectCallback) {
-                this._rejectQueue.enqueue(rejectCallback);
+                if(this._rejectQueue) this._rejectQueue.enqueue(rejectCallback);
             }
         }
 
@@ -141,7 +153,7 @@ module.exports = (function () {
     }
 
     function isPromise(obj) {
-        return obj && obj.then;
+        return obj && obj.then && isFunction(obj.then);
     }
 
     return {
