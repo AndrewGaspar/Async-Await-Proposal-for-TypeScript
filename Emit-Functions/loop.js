@@ -1,4 +1,7 @@
-function __loop(conditional, continuation, parentReturn, isDo) {
+var __promisify = require("./promisify").promisify,
+    __isPromise = require("./promisify").isPromise;
+
+function __loop(loop, continuation, parentReturn, isDo) {
     var returning = false,
         returnValue;
 
@@ -17,7 +20,7 @@ function __loop(conditional, continuation, parentReturn, isDo) {
                     }, function () {
                         skipConditionEval = true;
                     });
-                    return 
+                    return bodyEval;
                 }
             } else return __promisify((continuation) ? continuation() : undefined);
         }
@@ -33,4 +36,4 @@ function __loop(conditional, continuation, parentReturn, isDo) {
     return next();
 }
 
-module.export = __loop;
+module.exports = __loop;

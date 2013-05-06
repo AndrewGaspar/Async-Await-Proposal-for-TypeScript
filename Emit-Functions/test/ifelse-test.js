@@ -362,7 +362,7 @@ describe("Branching with returns", function () {
         var total;
         
         (function() {
-            var three, total = 0, _0, _1;
+            var three, total = 0;
 
             return __ifelse([
                 {
