@@ -1,4 +1,5 @@
-var __promisify = require("./promisify").__promisify;
+var __promisify = require("./promisify").promisify,
+    __isPromise = require("./promisify.js").isPromise;
 
 
 function __ifElse(conditionals, continuation, parentReturn) {

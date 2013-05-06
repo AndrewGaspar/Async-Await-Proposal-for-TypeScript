@@ -103,7 +103,7 @@ module.exports = (function () {
         deferred.prototype = {
             resolve: function (value) {
                 var _this = this;
-                (isPromise(value)) ? value.then(function (v) { _this._onResolve(v) }, function(r) { _this._onReject(r); }) : this._onResolve(value);
+                (isPromise(value)) ? value.then(function (v) { _this._onResolve(v) }, function (r) { _this._onReject(r); }) : this._onResolve(value);
             },
             reject: function (reason) {
                 var _this = this;
@@ -116,7 +116,7 @@ module.exports = (function () {
                     this._isPending = false;
 
                     this.promise._value = val;
-                    
+
                     this._rejectQueue = null;
                     this._fulfillQueue.start();
                 }
@@ -133,10 +133,10 @@ module.exports = (function () {
                 }
             },
             _queueFulfill: function (fulfillCallback) {
-                if(this._fulfillQueue) this._fulfillQueue.enqueue(fulfillCallback);
+                if (this._fulfillQueue) this._fulfillQueue.enqueue(fulfillCallback);
             },
             _queueReject: function (rejectCallback) {
-                if(this._rejectQueue) this._rejectQueue.enqueue(rejectCallback);
+                if (this._rejectQueue) this._rejectQueue.enqueue(rejectCallback);
             }
         }
 
@@ -148,6 +148,7 @@ module.exports = (function () {
     }
 
     function promisify(value) {
+        if (isPromise(value)) return value;
         var def = defer();
         def.resolve(value);
         return def.promise;
