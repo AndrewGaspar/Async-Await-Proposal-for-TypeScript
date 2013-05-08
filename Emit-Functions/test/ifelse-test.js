@@ -340,53 +340,49 @@ describe("Branching with returns", function () {
     });
 
     it("should return from sub-conditional", function (done) {
-        //function(done) {
-        //    var total = await (async function() {
-        //        var three, total = 0;
+        //(async function() {
+        //    var three, total = 0;
 
-        //        if((three = await __promisify(1) + await __promisify(2)) === 3) {
-        //            total += three;
+        //    if((three = await __promisify(1) + await __promisify(2)) === 3) {
+        //        total += three;
 
-        //            if(total + 2 === 5) {
-        //                total += await __promisify(2);
-        //                return total;
-        //            }
+        //        if(total + 2 === 5) {
+        //            total += await __promisify(2);
+        //            return total;
         //        }
+        //    }
 
-        //        return "nops";
-        //    })();
-
+        //    return "nops";
+        //})().then(function(total) {
         //    done((total === 5) ? undefined : "stuff don't work");
-        //}
+        //});
 
-        var total;
-        
-        (function() {
+        (function () {
             var three, total = 0;
 
             return __ifelse([
                 {
-                    condition: function() {
+                    condition: function () {
                         var _0, _1;
 
-                        return __promisify(1).then(function(_t) {
+                        return __promisify(1).then(function (_t) {
                             _0 = _t;
                             return __promisify(2);
-                        }).then(function(_t) {
-                           _1 = _t;
-                           return (three =  _0 + _1) === 3;
+                        }).then(function (_t) {
+                            _1 = _t;
+                            return (three = _0 + _1) === 3;
                         });
                     },
-                    body: function(__return) {
+                    body: function (__return) {
                         total += three;
 
                         return __ifelse([
                             {
-                                condition: function() {
+                                condition: function () {
                                     return total + 2 === 5
                                 },
-                                body: function(__return) {
-                                    return __promisify(2).then(function(_t) {
+                                body: function (__return) {
+                                    return __promisify(2).then(function (_t) {
                                         total += _t;
                                         __return(total);
                                     });
@@ -395,13 +391,11 @@ describe("Branching with returns", function () {
                         ], undefined, __return);
                     }
                 }
-            ], undefined, function() {
-                            return "nops"
-                        });
-        })().then(function(_t) {
-            total = _t;
-        })
-
-        done((total === 5) ? undefined : "stuff don't work");
+            ], undefined, function () {
+                return "nops"
+            });
+        })().then(function (total) {
+            done((total === 5) ? undefined : "Value got: " + total);
+        });
     });
 });
