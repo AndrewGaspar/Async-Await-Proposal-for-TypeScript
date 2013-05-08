@@ -48,7 +48,7 @@ interface __conditional {
 }
 
 interface __ifElse {
-  (conditionals: __conditional[], continuation: () => any, parentReturn?: (value: any) => void): Promise;
+  (conditionals: __conditional[], continuation: () => any, parentControl?: __controlFlow): Promise;
 }
 ```
 
