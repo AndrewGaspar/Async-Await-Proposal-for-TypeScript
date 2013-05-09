@@ -34,8 +34,10 @@ describe("Loop with no returns", function () {
                 body: function () {
                     return __promisify(i).then(function (_t) {
                         total *= _t;
-                        i++;
                     });
+                },
+                post: function () {
+                    i++;
                 }
             }, function () {
                 return total;
@@ -78,7 +80,7 @@ describe("Loop with no returns", function () {
                 return __promisify(numJobsLeft);
             }
             function doJob() {
-                return __promisify().then(function() {
+                return __promisify().then(function () {
                     numJobsLeft--;
                     return Math.random();
                 });
@@ -88,14 +90,14 @@ describe("Loop with no returns", function () {
             }
 
             return __loop({
-                condition: function() {
-                    return getNumJobs().then(function(_t) {
+                condition: function () {
+                    return getNumJobs().then(function (_t) {
                         return _t > 0;
                     });
                 },
-                body: function() {
+                body: function () {
                     var x;
-                    return doJob().then(function(_t) {
+                    return doJob().then(function (_t) {
                         x = _t;
                         publishValue(_t);
                     });
@@ -103,7 +105,7 @@ describe("Loop with no returns", function () {
             });
         }
 
-        serviceJobs().then(function() { done(); });
+        serviceJobs().then(function () { done(); });
 
     });
 });
@@ -120,7 +122,7 @@ describe("loop with returns", function () {
         //    else done(val + '');
         //});
 
-        (function() {
+        (function () {
             //for(var i = 0; i < 10; i++) {
             //    var val = await __promisify(i);
             //    if(val === 5) return val;
@@ -129,30 +131,102 @@ describe("loop with returns", function () {
             var i = 0;
 
             return __loop({
-                condition: function() {
+                condition: function () {
                     return i < 10;
                 },
-                body: function (__return) {
+                body: function (_c) {
                     var val;
 
                     return __promisify(i).then(function (_t) {
                         val = _t;
-                        return __ifelse([{
-                            condition: function () {
-                                return val === 5;
-                            },
-                            body: function (__return) {
-                                __return(val);
-                            }
-                        }], function () {
-                            i++;
-                        }, __return);
+                        if (val === 5) return _c.__return(val);
                     });
+                },
+                post: function () {
+                    i++;
                 }
             });
-        })().then(function(val) {
-            if(val === 5) done();
+        })().then(function (val) {
+            if (val === 5) done();
             else done(val + '');
+        });
+    });
+});
+
+describe("loop breaks", function () {
+    it("should stop before reaching 10", function (done) {
+        //(async function () {
+        //    var total = 0;
+        //    for(var i = 0; i < 10; i++) {
+        //        total += await __promisify(i);
+        //        if(i === 5) break;
+        //    }
+        //    return total;
+        //}).then(function(total) {
+        //   done((total === 15) ? undefined : "Total: " + total); 
+        //});
+
+        (function () {
+            var total = 0;
+
+            var i = 0;
+            return __loop({
+                condition: function () {
+                    return i < 10;
+                },
+                body: function (_c) {
+                    return __promisify(i).then(function (_t) {
+                        total += _t;
+                        if (i === 5) return _c.__break();
+                    });
+                },
+                post: function () {
+                    i++;
+                }
+            }, function () {
+                return total;
+            });
+        })().then(function (total) {
+            done((total === 15) ? undefined : "Total: " + total);
+        });
+    });
+});
+
+describe("loop continues", function () {
+    it("should skip numbers dibisible by 3", function (done) {
+        //(async function() {
+        //    var total = 0;
+        //    for(var i = 0; i < 10; i++) {
+        //        if(i % 3 === 0) continue;
+        //        total += await __promisify(i);
+        //    }
+        //    return total;
+        //})().then(function(total) {
+        //   done((total === 27) ? undefined : "Total: " + total); 
+        //});
+
+        (function () {
+            var total = 0;
+
+            var i = 0;
+            return __loop({
+                condition: function () {
+                    return i < 10;
+                },
+                body: function (_c) {
+                    if (i % 3 === 0) return _c.__continue();
+                    return __promisify(i).then(function (_t) {
+                        total += _t;
+                    });
+                },
+                post: function () {
+                    i++;
+                }
+            }, function () {
+                return total;
+            });
+        })().then(function (total) {
+            done((total === 27) ? undefined : "Total: " + total);
         });
     });
 });

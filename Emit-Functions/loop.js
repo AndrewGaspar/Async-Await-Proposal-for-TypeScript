@@ -3,7 +3,7 @@ var __promisify = require("./promisify").promisify,
     __defer = require("./promisify").defer;
 
 function __loop(loop, continuation, parentReturn, isDo) {
-    var stopFurtherExecution = false,
+    var returning = false,
         breaking = false,
         def = __defer(),
         returnValue;
@@ -15,12 +15,16 @@ function __loop(loop, continuation, parentReturn, isDo) {
     function evalCondition(truthy) {
         if (truthy) {
             if (loop.body) {
-                var prom = loop.body(function (value) { // __return
-                    if (parentReturn) parentReturn(value);
-                    returnValue = value;
-                    stopFurtherExecution = true;
-                }, function () { // __break
-                    breaking = true;
+                var prom = loop.body({
+                    __return: function (value) { // __return
+                        if (parentReturn) parentReturn(value);
+                        returnValue = value;
+                        returning = true;
+                    }, 
+                    __break: function () { // __break
+                        breaking = true;
+                    },
+                    __continue: function() {} // shouldn't need to do anything?
                 });
             }
         } else breaking = true;
@@ -29,16 +33,24 @@ function __loop(loop, continuation, parentReturn, isDo) {
     }
 
     function next() {
-        if (stopFurtherExecution) {
+        if (returning) {
             def.resolve(returnValue);
         } else if (breaking) {
             exitLoop();
         } else {
-            var conditionEvaluation = skipConditionEval || loop.condition();
-            skipConditionEval = false;
+            if(loop.post) {
+                var prom = loop.post();
+            }
 
-            __isPromise(conditionEvaluation) ? conditionEvaluation.then(evalCondition) : evalCondition(conditionEvaluation);
+            __isPromise(prom) ? prom.then(evaluateCondition) : evaluateCondition();
         }
+    }
+
+    function evaluateCondition() {
+        var conditionEvaluation = skipConditionEval || loop.condition();
+        skipConditionEval = false;
+
+        __isPromise(conditionEvaluation) ? conditionEvaluation.then(evalCondition) : evalCondition(conditionEvaluation);
     }
 
     var skipConditionEval = !!isDo;

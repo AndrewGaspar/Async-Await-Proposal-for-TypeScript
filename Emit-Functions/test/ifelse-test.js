@@ -249,16 +249,16 @@ describe("Branching with returns", function () {
                             return (total = _0 + _1 + _2) === 17;
                         });
                     },
-                    body: function (__return) {
-                        __return({
+                    body: function (_c) {
+                        return _c.__return({
                             message: "Good work, Agent Ballmer.",
                             payload: "Sweet, sweet honey."
                         });
                     }
                 }, {
-                    body: function (__return) {
+                    body: function (_c) {
                         diff = total - 17;
-                        __return(diff)
+                        return _c.__return(diff);
                     }
                 }
             ]);
@@ -318,16 +318,16 @@ describe("Branching with returns", function () {
                             return (total = _0 + _1 + _2) === 17;
                         });
                     },
-                    body: function (__return) {
-                        __return({
+                    body: function (_c) {
+                        return _c.__return({
                             message: "Good work, Agent Ballmer.",
                             payload: "Sweet, sweet honey."
                         });
                     }
                 }, {
-                    body: function (__return) {
+                    body: function (_c) {
                         diff = total - 17;
-                        __return(diff)
+                        return _c.__return(diff);
                     }
                 }
             ]);
@@ -373,7 +373,7 @@ describe("Branching with returns", function () {
                             return (three = _0 + _1) === 3;
                         });
                     },
-                    body: function (__return) {
+                    body: function (_c) {
                         total += three;
 
                         return __ifelse([
@@ -381,14 +381,14 @@ describe("Branching with returns", function () {
                                 condition: function () {
                                     return total + 2 === 5
                                 },
-                                body: function (__return) {
+                                body: function (_c) {
                                     return __promisify(2).then(function (_t) {
                                         total += _t;
-                                        __return(total);
+                                        _c.__return(total);
                                     });
                                 }
                             }
-                        ], undefined, __return);
+                        ], undefined, _c);
                     }
                 }
             ], undefined, function () {
