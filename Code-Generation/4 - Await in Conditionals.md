@@ -35,14 +35,20 @@ In this function, one branch results in `await` where as the other returns a val
 The basic idea is that an array of `conditionals` will be passed to the arguments of `__if`. Each object will have a `condition` property that is a function that returns a value or a promise for a value and a `body` property that is a function that contains the conditional body. All objects except the last require a condition (else block). Finally, a promise returning `continuation` function is passed in. This represents all operations that follow the if-else block.
 
 ```ts
+interface __controlFlow {
+  __return?: (value: any) => void;
+  __continue?: () => void;
+  __break?: () => void;
+}
+
 interface __conditional {
   condition: () => any; // can be promise, but not required
   body: () => any; // can return Promise, or void
-  body: (__return: (value: any) => void) => any; // If some branches of conditional return from the async function
+  body: (_c: __controlFlow) => any; // allows conditions to exit early
 }
 
 interface __ifElse {
-  (conditionals: __conditional[], continuation: () => any, parentReturn?: (value: any) => void): Promise;
+  (conditionals: __conditional[], continuation: () => any, parentControl?: __controlFlow): Promise;
 }
 ```
 
@@ -57,10 +63,10 @@ async function getBlogPostCount() {
     [
       {
         condition: () => !cachedCount,
-        body: async (__return) => { posts = await getBlogPosts(); __return(cachedCount = posts.length); },
+        body: async (__return) => { posts = await getBlogPosts(); _c.__return(cachedCount = posts.length); },
       },
       {
-        body: (__return) => { __return(cachedCount) }
+        body: (_c) => { _c.__return(cachedCount) }
       }
     ]
   );
@@ -105,9 +111,9 @@ async function payBill(customer, meals) {
     [
       {
         condition: () => customer.methodOfPayment instanceof CreditCard,
-        body: async (__return) => { 
+        body: async (_c) => { 
           await customer.methodOfPayment.credit(myAccount, payment); 
-          __return(); 
+          _c.__return(); 
         }
       },
       {
