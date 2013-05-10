@@ -1,15 +1,20 @@
 var __promisify = require("./promisify").promisify,
     __isPromise = require("./promisify").isPromise,
-    __defer = require("./promisify").defer;
+    __defer = require("./promisify").defer,
+    __maybeAsync = require("./promisify").maybeAsync
 
-function __loop(loop, continuation, parentReturn, isDo) {
+function __loop(loop, continuation, parentReturn) {
     var returning = false,
         breaking = false,
         def = __defer(),
         returnValue;
 
     function exitLoop() {
-        return __promisify((continuation) ? continuation() : undefined).then(function (val) { def.resolve(val); }, function (e) { def.reject(e); });
+        __maybeAsync((continuation) ? continuation() : undefined, function (val) {
+            def.resolve(val);
+        }, function (e) {
+            def.reject(e);
+        });
     }
 
     function evalCondition(truthy) {
@@ -29,7 +34,7 @@ function __loop(loop, continuation, parentReturn, isDo) {
             }
         } else breaking = true;
 
-        __isPromise(prom) ? prom.then(next) : next();
+        __maybeAsync(prom, next);
     }
 
     function next() {
@@ -42,7 +47,7 @@ function __loop(loop, continuation, parentReturn, isDo) {
                 var prom = loop.post();
             }
 
-            __isPromise(prom) ? prom.then(evaluateCondition) : evaluateCondition();
+            __maybeAsync(prom, evaluateCondition);
         }
     }
 
@@ -50,10 +55,10 @@ function __loop(loop, continuation, parentReturn, isDo) {
         var conditionEvaluation = skipConditionEval || loop.condition();
         skipConditionEval = false;
 
-        __isPromise(conditionEvaluation) ? conditionEvaluation.then(evalCondition) : evalCondition(conditionEvaluation);
+        __maybeAsync(conditionEvaluation, evalCondition);
     }
 
-    var skipConditionEval = !!isDo;
+    var skipConditionEval = !!(loop.isDo);
 
     next();
 
