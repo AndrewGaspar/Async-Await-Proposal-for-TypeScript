@@ -20,17 +20,12 @@ module.exports = (function () {
 
     function functionQueue() {
         var funcs = [],
-            i = 0,
             started = false;
 
         function iterator() {
-            _queueAndCallBack(funcs[i++], function () {
-                if (i < funcs.length) {
-                    iterator();
-                } else {
-                    funcs = [];
-                    i = 0;
-                }
+            deferFunction(function () {
+                for (var i = 0; i < funcs.length; i++) funcs[i]();
+                funcs = [];
             });
         }
 
