@@ -134,9 +134,7 @@ describe("Switch with promises", function () {
         });
     });
 
-    it("should break early", function (done) {
-        var a, b, c, d, e;
-
+    it("should return early", function (done) {
         (function () {
             return __switch(function () {
                 return 1;
@@ -144,36 +142,26 @@ describe("Switch with promises", function () {
                 value: function () {
                     return 0;
                 },
-                body: function () {
-                    a = true;
+                body: function (_c) {
+                    return _c.__return(2)
                 }
             }, {
                 value: function () {
                     return 1;
                 },
-                body: function () {
-                    b = true;
+                body: function (_c) {
+                    return _c.__return(1);
                 }
             }, {
                 value: function () {
                     return 2;
                 },
                 body: function (_c) {
-                    c = true;
-                    return _c.__break();
+                    return _c.__return(0);
                 }
-            }, {
-                value: function () {
-                    return 3;
-                },
-                body: function () {
-                    d = true;
-                }
-            }], function () {
-                e = true;
-            });
-        })().then(function () {
-            done((!a && b && c && !d && e) ? undefined : new Error("not correct execution - " + a + "," + b + "," + c + "," + d + "," + e));
+            }]);
+        })().then(function (x) {
+            done((x === 1) ? undefined : "Val: " + x);
         });
     });
 });
