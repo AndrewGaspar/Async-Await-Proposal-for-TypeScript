@@ -9,17 +9,17 @@ function __ifElse(conditionals, continuation, _pc) {
 
     function handleIf() {
         if (i < conditionals.length) {
-            var ifBlock = conditionals[i++];
+            var conditional = conditionals[i++];
 
             // If there is no condition and its the last block in if-else, it is an else block.
             // Condition will be true in this case. Otherwise it is the evaluation of the block's condition.
             __maybeAsync(function() {
-                return (!ifBlock.condition) || ifBlock.condition();
+                return (!conditional.condition) || conditional.condition();
             }, function(truthy) {
                 //  If the condition evaluates to true, run the body of the function then skip to the
                 //  continuation. otherwise call __ifElse recursively with the first item dequeued.
                 function returnPromise() {
-                    //  If ifBlock is returning or there is no continuation, the return value of the body
+                    //  If conditional is returning or there is no continuation, the return value of the body
                     //  should be returned. Otherwise the continuation should be called and returned.
 
                     if(controlBlock.continueExecuting) exit();
@@ -28,21 +28,25 @@ function __ifElse(conditionals, continuation, _pc) {
 
                 if (truthy) {
                     __maybeAsync(function() {
-                        return ifBlock.body(controlBlock);
+                        return conditional.body(controlBlock);
                     }, returnPromise);
                 } else handleIf();
-            });
+            }, handleError);
         } else exit();
+    }
+
+    function resolve(val) {
+        def.resolve(val);
+    }
+
+    function handleError(e) {
+        def.reject(e);
     }
 
     function exit() {
         __maybeAsync(function() {
             return (continuation) ? continuation() : undefined;
-        }, function (val) {
-            def.resolve(val);
-        }, function (e) {
-            def.reject(e);
-        });
+        }, resolve, handleError);
     }
 
     handleIf();
