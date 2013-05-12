@@ -1,8 +1,8 @@
-var __defer = require("./promisify").defer,
-    __maybeAsync = require("./promisify").maybeAsync,
-    __getControlBlock = require("./control");
+var __defer = this.__defer || require("./promisify").defer,
+    __maybeAsync = this.__maybeAsync || require("./promisify").maybeAsync,
+    __getControlBlock = this.__getControlBlock || require("./control");
 
-function __ifElse(conditionals, continuation, _pc) {
+var __ifElse = this.__ifElse || function (conditionals, continuation, _pc) {
     var def = __defer(),
         controlBlock = __getControlBlock(_pc),
         i = 0;
