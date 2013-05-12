@@ -11,16 +11,16 @@ function __ifElse(conditionals, continuation, _pc) {
         if (i < conditionals.length) {
             var conditional = conditionals[i++];
 
-            // If there is no condition and its the last block in if-else, it is an else block.
-            // Condition will be true in this case. Otherwise it is the evaluation of the block's condition.
+            // If there is a condition function, execute the condition, which may return a promise.
+            // If there is no condition function, return true.
             __maybeAsync(function() {
                 return (!conditional.condition) || conditional.condition();
             }, function(truthy) {
                 //  If the condition evaluates to true, run the body of the function then skip to the
                 //  continuation. otherwise call __ifElse recursively with the first item dequeued.
                 function returnPromise() {
-                    //  If conditional is returning or there is no continuation, the return value of the body
-                    //  should be returned. Otherwise the continuation should be called and returned.
+                    //  If conditional is returning, the return value of the body should be returned.
+                    //  Otherwise, "exist" the if-else block.
 
                     if(controlBlock.continueExecuting) exit();
                     else def.resolve((controlBlock.shouldReturn) ? controlBlock.returnValue : undefined);
@@ -29,19 +29,15 @@ function __ifElse(conditionals, continuation, _pc) {
                 if (truthy) {
                     __maybeAsync(function() {
                         return conditional.body(controlBlock);
-                    }, returnPromise);
+                    }, returnPromise, handleError);
                 } else handleIf();
             }, handleError);
         } else exit();
     }
 
-    function resolve(val) {
-        def.resolve(val);
-    }
+    function resolve(val) { def.resolve(val); }
 
-    function handleError(e) {
-        def.reject(e);
-    }
+    function handleError(e) { def.reject(e); }
 
     function exit() {
         __maybeAsync(function() {
@@ -54,4 +50,4 @@ function __ifElse(conditionals, continuation, _pc) {
     return def.promise;
 }
 
-module.exports = __ifElse;
+module.exports = __ifElse; // for testing purposes
