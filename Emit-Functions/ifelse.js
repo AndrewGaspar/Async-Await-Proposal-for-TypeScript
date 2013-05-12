@@ -1,8 +1,10 @@
 var __defer = require("./promisify").defer,
-    __maybeAsync = require("./promisify").maybeAsync;
+    __maybeAsync = require("./promisify").maybeAsync,
+    __getControlBlock = require("./control");
 
 function __ifElse(conditionals, continuation, _pc) {
     var def = __defer(),
+        controlBlock = __getControlBlock(_pc),
         i = 0;
 
     function handleIf() {
@@ -16,37 +18,17 @@ function __ifElse(conditionals, continuation, _pc) {
             }, function(truthy) {
                 //  If the condition evaluates to true, run the body of the function then skip to the
                 //  continuation. otherwise call __ifElse recursively with the first item dequeued.
-
-                var returning = false,
-                    continuing = true,
-                    returnValue;
-
                 function returnPromise() {
                     //  If ifBlock is returning or there is no continuation, the return value of the body
                     //  should be returned. Otherwise the continuation should be called and returned.
 
-                    if(continuing) exit();
-                    else def.resolve((returning) ? returnValue : undefined);
+                    if(controlBlock.continuing) exit();
+                    else def.resolve((controlBlock.returning) ? controlBlock.returnValue : undefined);
                 }
 
                 if (truthy) {
                     __maybeAsync(function() {
-                        return ifBlock.body({
-                            __return: function (value) { // block bodies call this rather than using the return keyword
-                                if (_pc && _pc.__return) _pc.__return(value);
-                                returnValue = value;
-                                returning = true;
-                                continuing = false;
-                            },
-                            __continue: function () {
-                                if (_pc && _pc.__continue) _pc.__continue();
-                                continuing = false;
-                            },
-                            __break: function () {
-                                if (_pc && _pc.__break) _pc.__break();
-                                continuing = false;
-                            }
-                        });
+                        return ifBlock.body(controlBlock);
                     }, returnPromise);
                 } else handleIf();
             });
