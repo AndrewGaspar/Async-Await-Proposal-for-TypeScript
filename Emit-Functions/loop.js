@@ -10,7 +10,9 @@ function __loop(loop, continuation, parentReturn) {
         returnValue;
 
     function exitLoop() {
-        __maybeAsync((continuation) ? continuation() : undefined, function (val) {
+        __maybeAsync(function() {
+            return (continuation) ? continuation() : undefined;
+        }, function (val) {
             def.resolve(val);
         }, function (e) {
             def.reject(e);
@@ -18,23 +20,23 @@ function __loop(loop, continuation, parentReturn) {
     }
 
     function evalCondition(truthy) {
-        if (truthy) {
-            if (loop.body) {
-                var prom = loop.body({
-                    __return: function (value) { // __return
-                        if (parentReturn) parentReturn(value);
-                        returnValue = value;
-                        returning = true;
-                    }, 
-                    __break: function () { // __break
-                        breaking = true;
-                    },
-                    __continue: function() {} // shouldn't need to do anything?
-                });
-            }
-        } else breaking = true;
-
-        __maybeAsync(prom, next);
+        __maybeAsync(function() {
+            if (truthy) {
+                if (loop.body) {
+                    return loop.body({
+                        __return: function (value) { // __return
+                            if (parentReturn) parentReturn(value);
+                            returnValue = value;
+                            returning = true;
+                        }, 
+                        __break: function () { // __break
+                            breaking = true;
+                        },
+                        __continue: function() {} // shouldn't need to do anything?
+                    });
+                }
+            } else breaking = true;
+        }, next);
     }
 
     function next() {
@@ -43,19 +45,18 @@ function __loop(loop, continuation, parentReturn) {
         } else if (breaking) {
             exitLoop();
         } else {
-            if(loop.post) {
-                var prom = loop.post();
-            }
-
-            __maybeAsync(prom, evaluateCondition);
+            __maybeAsync(function () {
+                if (loop.post) return loop.post();
+            }, evaluateCondition);
         }
     }
 
     function evaluateCondition() {
-        var conditionEvaluation = skipConditionEval || loop.condition();
-        skipConditionEval = false;
-
-        __maybeAsync(conditionEvaluation, evalCondition);
+        __maybeAsync(function () {
+            var conditionEvaluation = skipConditionEval || loop.condition();
+            skipConditionEval = false;
+            return conditionEvaluation
+        }, evalCondition);
     }
 
     var skipConditionEval = !!(loop.isDo);

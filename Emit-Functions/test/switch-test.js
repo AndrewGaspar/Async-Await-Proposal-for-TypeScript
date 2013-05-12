@@ -143,7 +143,7 @@ describe("Switch with promises", function () {
                     return 0;
                 },
                 body: function (_c) {
-                    return _c.__return(2)
+                    return _c.__return(2);
                 }
             }, {
                 value: function () {

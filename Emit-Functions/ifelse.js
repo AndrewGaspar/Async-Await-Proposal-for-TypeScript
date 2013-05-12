@@ -11,9 +11,9 @@ function __ifElse(conditionals, continuation, _pc) {
 
             // If there is no condition and its the last block in if-else, it is an else block.
             // Condition will be true in this case. Otherwise it is the evaluation of the block's condition.
-            var condition = (!ifBlock.condition) || ifBlock.condition();
-
-            __maybeAsync(condition, function(truthy) {
+            __maybeAsync(function() {
+                return (!ifBlock.condition) || ifBlock.condition();
+            }, function(truthy) {
                 //  If the condition evaluates to true, run the body of the function then skip to the
                 //  continuation. otherwise call __ifElse recursively with the first item dequeued.
 
@@ -30,29 +30,33 @@ function __ifElse(conditionals, continuation, _pc) {
                 }
 
                 if (truthy) {
-                    __maybeAsync(ifBlock.body({
-                        __return: function (value) { // block bodies call this rather than using the return keyword
-                            if (_pc && _pc.__return) _pc.__return(value);
-                            returnValue = value;
-                            returning = true;
-                            continuing = false;
-                        },
-                        __continue: function () {
-                            if (_pc && _pc.__continue) _pc.__continue();
-                            continuing = false;
-                        },
-                        __break: function () {
-                            if (_pc && _pc.__break) _pc.__break();
-                            continuing = false;
-                        }
-                    }), returnPromise);
+                    __maybeAsync(function() {
+                        return ifBlock.body({
+                            __return: function (value) { // block bodies call this rather than using the return keyword
+                                if (_pc && _pc.__return) _pc.__return(value);
+                                returnValue = value;
+                                returning = true;
+                                continuing = false;
+                            },
+                            __continue: function () {
+                                if (_pc && _pc.__continue) _pc.__continue();
+                                continuing = false;
+                            },
+                            __break: function () {
+                                if (_pc && _pc.__break) _pc.__break();
+                                continuing = false;
+                            }
+                        });
+                    }, returnPromise);
                 } else handleIf();
             });
         } else exit();
     }
 
     function exit() {
-        __maybeAsync((continuation) ? continuation() : undefined, function (val) {
+        __maybeAsync(function() {
+            return (continuation) ? continuation() : undefined;
+        }, function (val) {
             def.resolve(val);
         }, function (e) {
             def.reject(e);

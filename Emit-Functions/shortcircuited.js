@@ -4,7 +4,7 @@ var __defer = require('./promisify').defer,
 // AND:
 function __and(b1, b2) {
     var def = __defer();
-    __maybeAsync(b1(), function (val) {
+    __maybeAsync(b1, function (val) {
         try {
             def.resolve((val) ? b2() : val);
         } catch (e) {
@@ -19,7 +19,7 @@ function __and(b1, b2) {
 // OR:
 function __or(b1, b2) {
     var def = __defer();
-    __maybeAsync(b1(), function (val) {
+    __maybeAsync(b1, function (val) {
         try {
             def.resolve((val) ? val : b2());
         } catch (e) {

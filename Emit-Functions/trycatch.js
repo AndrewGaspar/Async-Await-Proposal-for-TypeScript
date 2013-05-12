@@ -11,52 +11,32 @@ function __tryCatch(__try, __catch, __finally, __continuation, _pc) {
         else d.resolve((controlBlock.returning) ? controlBlock.returnValue : undefined);
     }
 
-    function afterFinally() {
-        if (controlBlock.continuing) {
-            __maybeAsync((__continuation) ? __continuation() : undefined, function (val) {
-                d.resolve(val);
-            }, function (e) {
-                d.reject(e);
-            });
-        } else d.resolve((controlBlock.returning) ? controlBlock.returnValue : undefined);
-    }
-
     function rejectWithError(e) {
         d.reject(e);
     }
 
     function handleTry() {
-        try {
-            var tryPromise = __try(controlBlock);
-
-            __maybeAsync(tryPromise, afterTryAndCatch, handleCatch);
-        } catch(e) {
-            handleCatch(e);
-        }
+        __maybeAsync(function() { return __try(controlBlock); }, afterTryAndCatch, handleCatch);
     }
 
     function handleCatch(e) {
-        try {
-            var catchPromise = __catch(e, controlBlock);
-            
-            __maybeAsync(catchPromise, afterTryAndCatch, rejectWithError)
-        } catch(e) {
-            rejectWithError(e);
-        }
+        __maybeAsync(function () { return __catch(e, controlBlock); }, afterTryAndCatch, rejectWithError);
     }
 
     function handleFinally() {
-        try {
-            if (__finally) var finallyPromise = __finally();
-
-            __maybeAsync(finallyPromise, afterFinally, rejectWithError);
-        } catch(e) {
-            rejectWithError(e);
-        }
+        __maybeAsync(function() { if(__finally) return __finally(); }, afterFinally, rejectWithError);
     }
 
-    function exit() {
-        
+    function afterFinally() {
+        if (controlBlock.continuing) {
+            __maybeAsync(function () {
+                if (__continuation) return __continuation();
+            }, function (val) {
+                d.resolve(val);
+            }, function (e) {
+                d.reject(e);
+            });
+        } else d.resolve((controlBlock.returning) ? controlBlock.returnValue : undefined);
     }
 
     return d.promise;
