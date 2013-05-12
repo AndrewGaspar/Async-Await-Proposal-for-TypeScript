@@ -1,24 +1,27 @@
 function ControlBlock(parentControl, dontInherit) {
     this.parent = parentControl || {};
     this.dontInherit = dontInherit || {};
-    this.returning = false;
-    this.continuing = true;
+    this.shouldReturn = false;
+    this.shouldBreak = false;
+    this.shouldContinue = false;
+    this.continueExecuting = true;
 }
 
 ControlBlock.prototype = {
     __return: function (value) {
         if (this.parent.__return && !this.dontInherit.__return) this.parent.__return(value);
         this.returnValue = value;
-        this.returning = true;
-        this.continuing = false;
+        this.shouldReturn = true;
+        this.continueExecuting = false;
     },
     __break: function () {
         if (this.parent.__break && !this.dontInherit.__break) this.parent.__break();
-        this.continuing = false;
+        this.shouldBreak = true;
     },
     __continue: function () {
         if (this.parent.__continue && !this.dontInherit.__continue) this.parent.__continue();
-        this.continuing = false;
+        this.shouldContinue = true;
+        this.continueExecuting = false;
     }
 }
 

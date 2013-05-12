@@ -1,67 +1,68 @@
 var __promisify = require("./promisify").promisify,
     __isPromise = require("./promisify").isPromise,
     __defer = require("./promisify").defer,
-    __maybeAsync = require("./promisify").maybeAsync
+    __maybeAsync = require("./promisify").maybeAsync,
+    __getControlBlock = require("./control");
 
-function __loop(loop, continuation, parentReturn) {
-    var returning = false,
-        breaking = false,
-        def = __defer(),
-        returnValue;
+function __loop(loop, continuation, _pc) {
+    var def = __defer(),
+        controlBlock = __getControlBlock(_pc, { __break: true, __continue: true });
+
+
+    function start() {
+        __maybeAsync(function () {
+            if (loop.initialization) return loop.initialization();
+        }, evaluateCondition, handleError);
+    }
+
+    function evaluateCondition() {
+        __maybeAsync(function () {
+            // If there is no indication that the conditionEval needs to be skipped,
+            // check to see if there is a condition function. If not, return true.
+            // Otherwise, evaluate loop.condition, which may or may not return a promise.
+            var conditionEvaluation = skipConditionEval || (!loop.condition || loop.condition());
+            skipConditionEval = false; // set to false because this is only done once, usually with do-while
+            return conditionEvaluation; // return - may be promise
+        }, checkCondition, handleError);
+    }
+
+    function checkCondition(truthy) {
+        __maybeAsync(function () {
+            if (truthy) {
+                if (loop.body) {
+                    return loop.body(controlBlock);
+                }
+            } else controlBlock.__break();
+        }, next, handleError);
+    }
+
+    function next() {
+        if (controlBlock.shouldReturn) {
+            def.resolve(controlBlock.returnValue);
+        } else if (controlBlock.shouldBreak) {
+            exitLoop();
+        } else {
+            __maybeAsync(function () {
+                if (loop.post) return loop.post();
+            }, evaluateCondition, handleError);
+        }
+    }
+
+    function handleError(e) {
+        def.reject(e);
+    }
 
     function exitLoop() {
         __maybeAsync(function() {
             return (continuation) ? continuation() : undefined;
         }, function (val) {
             def.resolve(val);
-        }, function (e) {
-            def.reject(e);
-        });
-    }
-
-    function evalCondition(truthy) {
-        __maybeAsync(function() {
-            if (truthy) {
-                if (loop.body) {
-                    return loop.body({
-                        __return: function (value) { // __return
-                            if (parentReturn) parentReturn(value);
-                            returnValue = value;
-                            returning = true;
-                        }, 
-                        __break: function () { // __break
-                            breaking = true;
-                        },
-                        __continue: function() {} // shouldn't need to do anything?
-                    });
-                }
-            } else breaking = true;
-        }, next);
-    }
-
-    function next() {
-        if (returning) {
-            def.resolve(returnValue);
-        } else if (breaking) {
-            exitLoop();
-        } else {
-            __maybeAsync(function () {
-                if (loop.post) return loop.post();
-            }, evaluateCondition);
-        }
-    }
-
-    function evaluateCondition() {
-        __maybeAsync(function () {
-            var conditionEvaluation = skipConditionEval || loop.condition();
-            skipConditionEval = false;
-            return conditionEvaluation
-        }, evalCondition);
+        }, handleError);
     }
 
     var skipConditionEval = !!(loop.isDo);
 
-    next();
+    start();
 
     return def.promise;
 }

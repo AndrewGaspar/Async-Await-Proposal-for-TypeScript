@@ -22,8 +22,8 @@ function __ifElse(conditionals, continuation, _pc) {
                     //  If ifBlock is returning or there is no continuation, the return value of the body
                     //  should be returned. Otherwise the continuation should be called and returned.
 
-                    if(controlBlock.continuing) exit();
-                    else def.resolve((controlBlock.returning) ? controlBlock.returnValue : undefined);
+                    if(controlBlock.continueExecuting) exit();
+                    else def.resolve((controlBlock.shouldReturn) ? controlBlock.returnValue : undefined);
                 }
 
                 if (truthy) {

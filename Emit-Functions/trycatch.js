@@ -7,8 +7,8 @@ function __tryCatch(__try, __catch, __finally, __continuation, _pc) {
         controlBlock = __getControlBlock(_pc);
 
     function afterTryAndCatch() {
-        if (controlBlock.continuing) handleFinally();
-        else d.resolve((controlBlock.returning) ? controlBlock.returnValue : undefined);
+        if (controlBlock.continueExecution) handleFinally();
+        else d.resolve((controlBlock.shouldReturn) ? controlBlock.returnValue : undefined);
     }
 
     function rejectWithError(e) {
@@ -28,7 +28,7 @@ function __tryCatch(__try, __catch, __finally, __continuation, _pc) {
     }
 
     function afterFinally() {
-        if (controlBlock.continuing) {
+        if (controlBlock.continueExecution) {
             __maybeAsync(function () {
                 if (__continuation) return __continuation();
             }, function (val) {
@@ -36,7 +36,7 @@ function __tryCatch(__try, __catch, __finally, __continuation, _pc) {
             }, function (e) {
                 d.reject(e);
             });
-        } else d.resolve((controlBlock.returning) ? controlBlock.returnValue : undefined);
+        } else d.resolve((controlBlock.shouldReturn) ? controlBlock.returnValue : undefined);
     }
 
     return d.promise;

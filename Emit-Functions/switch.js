@@ -10,28 +10,28 @@ module.exports = function __switch(value, cases, continuation, _pc) {
         controlBlock = __getControlBlock(_pc, { __break: true });
 
     function next() {
-        if (controlBlock.continuing && i < cases.length) {
+        if (controlBlock.continueExecuting && !controlBlock.shouldBreak && i < cases.length) {
             var caseBlock = cases[i++];
 
             // If there is no condition and its the last block in if-else, it is an else block.
             // Condition will be true in this case. Otherwise it is the evaluation of the block's condition.
 
-            __maybeAsync(function() { 
+            __maybeAsync(function () {
                 return hasCase || (!caseBlock.value || caseBlock.value());
             }, function (caseValue) {
                 //  If the condition evaluates to true, run the body of the function then skip to the
                 //  continuation. otherwise call __ifElse recursively with the first item dequeued.
-                
+
                 hasCase = hasCase || (caseValue === switchValue);
-                if (hasCase) {
-                    __maybeAsync(function() {
-                        return caseBlock.body(controlBlock);
-                    }, next, handleError);
-                } else next();
+                __maybeAsync(function () {
+                    if (hasCase) return caseBlock.body(controlBlock);
+                }, next, handleError);
             }, handleError);
-        } else if(controlBlock.returning) {
+        } else if (controlBlock.shouldReturn) {
             def.resolve(controlBlock.returnValue);
-        } else exit();
+        } else {
+            exit();
+        }
     }
 
     function handleError(e) {
@@ -39,18 +39,17 @@ module.exports = function __switch(value, cases, continuation, _pc) {
     }
 
     function exit() {
-        __maybeAsync(function() {
-            return (continuation) ? continuation() : undefined;
+        __maybeAsync(function () {
+            // only run continuation if the reason for exiting was due to 
+            if(controlBlock.continueExecuting) return (continuation) ? continuation() : undefined;
         }, function (val) {
             def.resolve(val);
-        }, function (e) {
-            def.reject(e);
-        });
+        }, handleError);
     }
 
-    __maybeAsync(function() {
+    __maybeAsync(function () {
         return value();
-    }, function(value) {
+    }, function (value) {
         switchValue = value;
         next();
     }, handleError);
