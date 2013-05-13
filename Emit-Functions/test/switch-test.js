@@ -1,9 +1,10 @@
 var __switch = require("../switch"),
-    __promisify = require("../promisify");
+    __promisify = require("../promisify"),
+    __async = require("../async");
 
 describe("Switch without promises", function () {
     it("should run two cases", function (done) {
-        function twoPowUpToThree(x) {
+        var twoPowUpToThree = __async(function (x) {
             var out = 1;
 
             return __switch(
@@ -37,7 +38,7 @@ describe("Switch without promises", function () {
                 function () {
                     return out;
                 });
-        }
+        });
 
         twoPowUpToThree(2).then(function (out) {
             done((out === 4) ? undefined : new Error("Power: " + out));
@@ -47,7 +48,7 @@ describe("Switch without promises", function () {
     it("should break early", function (done) {
         var a, b, c, d, e;
 
-        (function () {
+        __async(function () {
             return __switch(function () {
                 return 1;
             }, [{
@@ -92,7 +93,7 @@ describe("Switch with promises", function () {
     it("should run value function once", function (done) {
         var count = 0;
 
-        function twoPowUpToThree(x) {
+        var twoPowUpToThree = __async(function (x) {
             var out = 1;
 
             return __switch(
@@ -127,7 +128,7 @@ describe("Switch with promises", function () {
                 function () {
                     return out;
                 });
-        }
+        });
 
         twoPowUpToThree(2).then(function (out) {
             done((out === 4 && count === 1) ? undefined : new Error("Power: " + out));
@@ -135,7 +136,7 @@ describe("Switch with promises", function () {
     });
 
     it("should return early", function (done) {
-        (function () {
+        __async(function () {
             return __switch(function () {
                 return 1;
             }, [{

@@ -21,7 +21,7 @@ describe("Loop with no returns", function () {
         //    else done("No bueno."); 
         //});
 
-        var fac = __async(function fac(n) {
+        var fac = __async(function (n) {
             var total = 1;
 
             var i = 1;

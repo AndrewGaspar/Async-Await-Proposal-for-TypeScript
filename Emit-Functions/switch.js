@@ -1,9 +1,9 @@
-var __defer = this.__defer || require("./defer"),
+var __getSyncEntity = this.__getSyncEntity || require("./getSyncEntity"),
     __maybeAsync = this.__maybeAsync || require("./maybeAsync"),
     __getControlBlock = this.__getControlBlock || require("./control");
 
-var __switch = this.__switch || function(value, cases, continuation, _pc) {
-    var def = __defer(),
+var __switch = this.__switch || function (value, cases, continuation, _pc) {
+    var ent = __getSyncEntity(),
         hasCase = false,
         switchValue,
         i = 0,
@@ -28,23 +28,25 @@ var __switch = this.__switch || function(value, cases, continuation, _pc) {
                 }, next, handleError);
             }, handleError);
         } else if (controlBlock.shouldReturn) {
-            def.resolve(controlBlock.returnValue);
+            resolve(controlBlock.returnValue);
         } else {
             exit();
         }
     }
 
+    function resolve(val) {
+        ent.resolve(val);
+    }
+
     function handleError(e) {
-        def.reject(e);
+        ent.reject(e);
     }
 
     function exit() {
         __maybeAsync(function () {
             // only run continuation if the reason for exiting was due to 
-            if(controlBlock.continueExecuting) return (continuation) ? continuation() : undefined;
-        }, function (val) {
-            def.resolve(val);
-        }, handleError);
+            if (controlBlock.continueExecuting) return (continuation) ? continuation() : undefined;
+        }, resolve, handleError);
     }
 
     __maybeAsync(function () {
@@ -54,7 +56,7 @@ var __switch = this.__switch || function(value, cases, continuation, _pc) {
         next();
     }, handleError);
 
-    return def.promise;
+    return ent.getReturn();
 }
 
 module.exports = __switch;
