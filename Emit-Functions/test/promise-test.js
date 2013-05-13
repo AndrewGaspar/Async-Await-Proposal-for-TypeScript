@@ -1,5 +1,4 @@
-var __defer = require('../promisify').defer,
-    assert = require('assert');
+var __defer = require('../defer');
 
 describe("Promises/A+ tests", function () {
     require("promises-aplus-tests").mocha({

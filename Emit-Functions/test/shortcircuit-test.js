@@ -1,7 +1,6 @@
-var __promisify = require("../promisify").promisify,
-    __defer = require("../promisify").defer,
-    __and = require("../shortcircuited").__and,
-    __or = require("../shortcircuited").__or,
+var __promisify = require("../promisify"),
+    __and = require("../and"),
+    __or = require("../or"),
     assert = require("assert");
 
 describe("non-promise arguments", function () {

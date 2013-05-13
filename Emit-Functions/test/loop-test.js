@@ -1,9 +1,7 @@
-var __promisify = require("../promisify.js").promisify,
-    __defer = require("../promisify.js").defer,
-    __isPromise = require("../promisify.js").isPromise,
-    __and = require("../shortcircuited.js").__and,
-    __or = require("../shortcircuited.js").__or,
-    __ifelse = require("../ifelse.js"),
+var __promisify = require("../promisify.js"),
+    __and = require("../and.js"),
+    __or = require("../or.js"),
+    __ifElse = require("../ifElse.js"),
     __loop = require("../loop.js"),
     assert = require("assert");
 

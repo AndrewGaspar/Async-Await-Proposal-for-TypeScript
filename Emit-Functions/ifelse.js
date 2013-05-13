@@ -1,5 +1,5 @@
-var __defer = this.__defer || require("./promisify").defer,
-    __maybeAsync = this.__maybeAsync || require("./promisify").maybeAsync,
+var __defer = this.__defer || require("./defer"),
+    __maybeAsync = this.__maybeAsync || require("./maybeAsync"),
     __getControlBlock = this.__getControlBlock || require("./control");
 
 var __ifElse = this.__ifElse || function (conditionals, continuation, _pc) {

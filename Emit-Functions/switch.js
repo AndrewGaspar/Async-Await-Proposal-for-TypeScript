@@ -1,8 +1,8 @@
-var __defer = require("./promisify").defer,
-    __maybeAsync = require("./promisify").maybeAsync,
+var __defer = require("./defer"),
+    __maybeAsync = require("./maybeAsync"),
     __getControlBlock = require("./control");
 
-module.exports = function __switch(value, cases, continuation, _pc) {
+var __switch = this.__switch || function(value, cases, continuation, _pc) {
     var def = __defer(),
         hasCase = false,
         switchValue,
@@ -56,3 +56,5 @@ module.exports = function __switch(value, cases, continuation, _pc) {
 
     return def.promise;
 }
+
+module.exports = __switch;

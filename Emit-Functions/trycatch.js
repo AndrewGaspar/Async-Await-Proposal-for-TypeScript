@@ -1,6 +1,6 @@
-var __defer = require("./promisify").defer,
-    __maybeAsync = require("./promisify").maybeAsync,
-    __getControlBlock = require("./control").getControlBlock;
+var __defer = require("./defer"),
+    __maybeAsync = require("./maybeAsync"),
+    __getControlBlock = require("./control");
 
 function __tryCatch(__try, __catch, __finally, __continuation, _pc) {
     var d = __defer(),

@@ -1,5 +1,5 @@
-var __switch = require("../switch.js"),
-    __promisify = require("../promisify.js").promisify;
+var __switch = require("../switch"),
+    __promisify = require("../promisify");
 
 describe("Switch without promises", function () {
     it("should run two cases", function (done) {

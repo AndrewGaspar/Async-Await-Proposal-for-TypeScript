@@ -1,10 +1,8 @@
-var __promisify = require("./promisify").promisify,
-    __isPromise = require("./promisify").isPromise,
-    __defer = require("./promisify").defer,
-    __maybeAsync = require("./promisify").maybeAsync,
+var __defer = require("./defer"),
+    __maybeAsync = require("./maybeAsync"),
     __getControlBlock = require("./control");
 
-function __loop(loop, continuation, _pc) {
+var __loop = this.__loop || function(loop, continuation, _pc) {
     var def = __defer(),
         controlBlock = __getControlBlock(_pc, { __break: true, __continue: true });
 

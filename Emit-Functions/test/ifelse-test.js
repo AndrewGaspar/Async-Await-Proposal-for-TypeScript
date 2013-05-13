@@ -1,16 +1,15 @@
-var __promisify = require("../promisify.js").promisify,
-    __defer = require("../promisify.js").defer,
-    __isPromise = require("../promisify.js").isPromise,
-    __and = require("../shortcircuited.js").__and,
-    __or = require("../shortcircuited.js").__or,
-    __ifelse = require("../ifelse.js"),
+var __promisify = require("../promisify"),
+    __isPromise = require("../isPromise"),
+    __and = require("../and"),
+    __or = require("../or"),
+    __ifElse = require("../ifElse"),
     assert = require("assert");
 
 describe("Branching with no returns", function () {
     it("Should only run first condition", function (done) {
         var a, b, c;
 
-        __ifelse([{
+        __ifElse([{
             condition: function () {
                 return true;
             },
@@ -37,7 +36,7 @@ describe("Branching with no returns", function () {
     it("should wait on condition promise to fulfill", function () {
         var a, b, c;
 
-        __ifelse([{
+        __ifElse([{
             condition: function () {
                 return __promisify(true);
             },
@@ -64,7 +63,7 @@ describe("Branching with no returns", function () {
     it("conditions should only evaluate as needed", function () {
         var x = 0, a, b, c;
 
-        __ifelse([{
+        __ifElse([{
             condition: function () {
                 x += 2;
                 return __promisify(true);
@@ -117,7 +116,7 @@ describe("Branching with no returns", function () {
         var a, b, c;
 
         var prom = (function () {
-            return __ifelse([{
+            return __ifElse([{
                 condition: function () {
                     return __promisify(18);
                 },
@@ -170,7 +169,7 @@ describe("Branching with no returns", function () {
         var a, b;
 
         var prom = (function () {
-            return __ifelse([
+            return __ifElse([
                 {
                     condition: function () {
                         return true;
@@ -233,7 +232,7 @@ describe("Branching with returns", function () {
                 requestNine = __promisify(9),
                 total, diff;
 
-            return __ifelse([
+            return __ifElse([
                 {
                     condition: function () {
                         var _0, _1, _2;
@@ -302,7 +301,7 @@ describe("Branching with returns", function () {
                 requestSeven = __promisify(7),
                 total, diff;
 
-            return __ifelse([
+            return __ifElse([
                 {
                     condition: function () {
                         var _0, _1, _2;
@@ -360,7 +359,7 @@ describe("Branching with returns", function () {
         (function () {
             var three, total = 0;
 
-            return __ifelse([
+            return __ifElse([
                 {
                     condition: function () {
                         var _0, _1;
@@ -376,7 +375,7 @@ describe("Branching with returns", function () {
                     body: function (_c) {
                         total += three;
 
-                        return __ifelse([
+                        return __ifElse([
                             {
                                 condition: function () {
                                     return total + 2 === 5
