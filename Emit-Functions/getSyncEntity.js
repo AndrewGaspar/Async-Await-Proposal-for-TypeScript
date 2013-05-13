@@ -1,4 +1,4 @@
-var __defer = this.__defer || require("./defer");
+var __getDeferral = this.__getDeferral || require("./getDeferral");
 
 var __getSyncEntity = this.__getSyncEntity || (function () {
 
@@ -34,7 +34,7 @@ var __getSyncEntity = this.__getSyncEntity || (function () {
             if (this.isResolved) return this.resolveValue;
             else if (this.isRejected) throw this.reason;
             else {
-                this.deferred = this.deferred || __defer();
+                this.deferred = this.deferred || __getDeferral();
                 return this.deferred.promise;
             }
         }

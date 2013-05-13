@@ -1,10 +1,10 @@
-var __defer = require('../defer'),
+var __getDeferral = require('../getDeferral'),
     __rejectify = require('../rejectify');
 
 describe("Promises/A+ tests", function () {
     require("promises-aplus-tests").mocha({
         pending: function () {
-            var d = __defer();
+            var d = __getDeferral();
 
             return {
                 promise: d.promise,
