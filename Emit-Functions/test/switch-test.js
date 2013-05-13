@@ -4,41 +4,43 @@ var __switch = require("../switch"),
 
 describe("Switch without promises", function () {
     it("should run two cases", function (done) {
-        var twoPowUpToThree = __async(function (x) {
-            var out = 1;
+        function twoPowUpToThree(x) {
+            return __async(function () {
+                var out = 1;
 
-            return __switch(
-                function () {
-                    return x;
-                },
-                [{
-                    value: function () {
-                        return 3;
+                return __switch(
+                    function () {
+                        return x;
                     },
-                    body: function () {
-                        out *= 2;
-                    }
-                },
-                {
-                    value: function () {
-                        return 2;
+                    [{
+                        value: function () {
+                            return 3;
+                        },
+                        body: function () {
+                            out *= 2;
+                        }
                     },
-                    body: function () {
-                        out *= 2;
-                    }
-                },
-                {
-                    value: function () {
-                        return 1;
+                    {
+                        value: function () {
+                            return 2;
+                        },
+                        body: function () {
+                            out *= 2;
+                        }
                     },
-                    body: function () {
-                        out *= 2;
-                    }
-                }],
-                function () {
-                    return out;
-                });
-        });
+                    {
+                        value: function () {
+                            return 1;
+                        },
+                        body: function () {
+                            out *= 2;
+                        }
+                    }],
+                    function () {
+                        return out;
+                    });
+            });
+        }
 
         twoPowUpToThree(2).then(function (out) {
             done((out === 4) ? undefined : new Error("Power: " + out));
@@ -48,40 +50,42 @@ describe("Switch without promises", function () {
     it("should break early", function (done) {
         var a, b, c, d, e;
 
-        __async(function () {
-            return __switch(function () {
-                return 1;
-            }, [{
-                value: function () {
-                    return 0;
-                },
-                body: function () {
-                    a = true;
-                }
-            }, {
-                value: function () {
+        (function () {
+            return __async(function () {
+                return __switch(function () {
                     return 1;
-                },
-                body: function () {
-                    b = true;
-                }
-            }, {
-                value: function () {
-                    return 2;
-                },
-                body: function (_c) {
-                    c = true;
-                    return _c.__break();
-                }
-            }, {
-                value: function () {
-                    return 3;
-                },
-                body: function () {
-                    d = true;
-                }
-            }], function () {
-                e = true;
+                }, [{
+                    value: function () {
+                        return 0;
+                    },
+                    body: function () {
+                        a = true;
+                    }
+                }, {
+                    value: function () {
+                        return 1;
+                    },
+                    body: function () {
+                        b = true;
+                    }
+                }, {
+                    value: function () {
+                        return 2;
+                    },
+                    body: function (_c) {
+                        c = true;
+                        return _c.__break();
+                    }
+                }, {
+                    value: function () {
+                        return 3;
+                    },
+                    body: function () {
+                        d = true;
+                    }
+                }], function () {
+                    e = true;
+                });
             });
         })().then(function () {
             done((!a && b && c && !d && e) ? undefined : new Error("not correct execution - " + a + "," + b + "," + c + "," + d + "," + e));
@@ -93,42 +97,44 @@ describe("Switch with promises", function () {
     it("should run value function once", function (done) {
         var count = 0;
 
-        var twoPowUpToThree = __async(function (x) {
-            var out = 1;
+        function twoPowUpToThree(x) {
+            return __async(function () {
+                var out = 1;
 
-            return __switch(
-                function () {
-                    return x;
-                },
-                [{
-                    value: function () {
-                        count++;
-                        return __promisify(3);
+                return __switch(
+                    function () {
+                        return x;
                     },
-                    body: function () {
-                        out *= 2;
-                    }
-                },
-                {
-                    value: function () {
-                        return 2;
+                    [{
+                        value: function () {
+                            count++;
+                            return __promisify(3);
+                        },
+                        body: function () {
+                            out *= 2;
+                        }
                     },
-                    body: function () {
-                        out *= 2;
-                    }
-                },
-                {
-                    value: function () {
-                        return 1;
+                    {
+                        value: function () {
+                            return 2;
+                        },
+                        body: function () {
+                            out *= 2;
+                        }
                     },
-                    body: function () {
-                        out *= 2;
-                    }
-                }],
-                function () {
-                    return out;
-                });
-        });
+                    {
+                        value: function () {
+                            return 1;
+                        },
+                        body: function () {
+                            out *= 2;
+                        }
+                    }],
+                    function () {
+                        return out;
+                    });
+            });
+        }
 
         twoPowUpToThree(2).then(function (out) {
             done((out === 4 && count === 1) ? undefined : new Error("Power: " + out));
@@ -136,31 +142,33 @@ describe("Switch with promises", function () {
     });
 
     it("should return early", function (done) {
-        __async(function () {
-            return __switch(function () {
-                return 1;
-            }, [{
-                value: function () {
-                    return 0;
-                },
-                body: function (_c) {
-                    return _c.__return(2);
-                }
-            }, {
-                value: function () {
+        (function () {
+            return __async(function () {
+                return __switch(function () {
                     return 1;
-                },
-                body: function (_c) {
-                    return _c.__return(1);
-                }
-            }, {
-                value: function () {
-                    return 2;
-                },
-                body: function (_c) {
-                    return _c.__return(0);
-                }
-            }]);
+                }, [{
+                    value: function () {
+                        return 0;
+                    },
+                    body: function (_c) {
+                        return _c.__return(2);
+                    }
+                }, {
+                    value: function () {
+                        return 1;
+                    },
+                    body: function (_c) {
+                        return _c.__return(1);
+                    }
+                }, {
+                    value: function () {
+                        return 2;
+                    },
+                    body: function (_c) {
+                        return _c.__return(0);
+                    }
+                }]);
+            });
         })().then(function (x) {
             done((x === 1) ? undefined : "Val: " + x);
         });
