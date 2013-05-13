@@ -1,16 +1,13 @@
-var __defer = this.__defer || require("./defer");
+var __rejectify = this.__rejectify || require("./rejectify"),
+    __promisify = this.__promisify || require("./promisify");
 
 var __async = this.__async || function (asyncFunction) {
     return function () {
-        var def = __defer();
-        
         try {
-            def.resolve(asyncFunction.apply(this, arguments));
-        } catch (e) {
-            def.reject(e);
+            return __promisify(asyncFunction.apply(this, arguments));
+        } catch (e) { // if an uncaught exception occurs, return a promise which is rejected with the error.
+            return __rejectify(e);
         }
-
-        return def.promise;
     }
 }
 
