@@ -1,6 +1,6 @@
-var __defer = require("./defer"),
-    __maybeAsync = require("./maybeAsync"),
-    __getControlBlock = require("./control");
+var __defer = this.__defer || require("./defer"),
+    __maybeAsync = this.__maybeAsync || require("./maybeAsync"),
+    __getControlBlock = this.__getControlBlock || require("./control");
 
 var __loop = this.__loop || function(loop, continuation, _pc) {
     var def = __defer(),

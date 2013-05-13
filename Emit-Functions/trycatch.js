@@ -1,8 +1,8 @@
-var __defer = require("./defer"),
-    __maybeAsync = require("./maybeAsync"),
-    __getControlBlock = require("./control");
+var __defer = this.__defer || require("./defer"),
+    __maybeAsync = this.__defer || require("./maybeAsync"),
+    __getControlBlock = this.__getControlBlock || require("./control");
 
-function __tryCatch(__try, __catch, __finally, __continuation, _pc) {
+var __tryCatch = this.__tryCatch || function(__try, __catch, __finally, __continuation, _pc) {
     var d = __defer(),
         controlBlock = __getControlBlock(_pc);
 

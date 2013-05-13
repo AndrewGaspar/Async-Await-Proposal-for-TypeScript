@@ -1,5 +1,5 @@
-var __defer = require('./defer'),
-    __maybeAsync = require('./maybeAsync');
+var __defer = this.__defer || require('./defer'),
+    __maybeAsync = this.__maybeAsync || require('./maybeAsync');
 
 // OR:
 var __or = this.__or || function(b1, b2) {
