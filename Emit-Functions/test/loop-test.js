@@ -21,27 +21,29 @@ describe("Loop with no returns", function () {
         //    else done("No bueno."); 
         //});
 
-        var fac = __async(function (n) {
-            var total = 1;
+        function fac(n) {
+            return __async(function () {
+                var total = 1;
 
-            var i = 1;
+                var i = 1;
 
-            return __loop({
-                condition: function () {
-                    return i <= n;
-                },
-                body: function () {
-                    return __promisify(i).then(function (_t) {
-                        total *= _t;
-                    });
-                },
-                post: function () {
-                    i++;
-                }
-            }, function () {
-                return total;
+                return __loop({
+                    condition: function () {
+                        return i <= n;
+                    },
+                    body: function () {
+                        return __promisify(i).then(function (_t) {
+                            total *= _t;
+                        });
+                    },
+                    post: function () {
+                        i++;
+                    }
+                }, function () {
+                    return total;
+                });
             });
-        });
+        }
 
         fac(5).then(function (val) {
             if (val === 120) done();
@@ -73,36 +75,38 @@ describe("Loop with no returns", function () {
 
         //serviceJobs().then(function() { done(); });
 
-        var serviceJobs = __async(function serviceJobs() {
-            var numJobsLeft = 5;
-            function getNumJobs() {
-                return __promisify(numJobsLeft);
-            }
-            function doJob() {
-                return __promisify().then(function () {
-                    numJobsLeft--;
-                    return Math.random();
-                });
-            }
-            function publishValue(val) {
-                // you can imagine, right?
-            }
-
-            return __loop({
-                condition: function () {
-                    return getNumJobs().then(function (_t) {
-                        return _t > 0;
-                    });
-                },
-                body: function () {
-                    var x;
-                    return doJob().then(function (_t) {
-                        x = _t;
-                        publishValue(_t);
+        function serviceJobs() {
+            return __async(function serviceJobs() {
+                var numJobsLeft = 5;
+                function getNumJobs() {
+                    return __promisify(numJobsLeft);
+                }
+                function doJob() {
+                    return __promisify().then(function () {
+                        numJobsLeft--;
+                        return Math.random();
                     });
                 }
+                function publishValue(val) {
+                    // you can imagine, right?
+                }
+
+                return __loop({
+                    condition: function () {
+                        return getNumJobs().then(function (_t) {
+                            return _t > 0;
+                        });
+                    },
+                    body: function () {
+                        var x;
+                        return doJob().then(function (_t) {
+                            x = _t;
+                            publishValue(_t);
+                        });
+                    }
+                });
             });
-        });
+        }
 
         serviceJobs().then(function () { done(); });
 
@@ -121,29 +125,31 @@ describe("loop with returns", function () {
         //    else done(val + '');
         //});
 
-        __async(function () {
-            //for(var i = 0; i < 10; i++) {
-            //    var val = await __promisify(i);
-            //    if(val === 5) return val;
-            //}
+        (function () {
+            return __async(function () {
+                //for(var i = 0; i < 10; i++) {
+                //    var val = await __promisify(i);
+                //    if(val === 5) return val;
+                //}
 
-            var i = 0;
+                var i = 0;
 
-            return __loop({
-                condition: function () {
-                    return i < 10;
-                },
-                body: function (_c) {
-                    var val;
+                return __loop({
+                    condition: function () {
+                        return i < 10;
+                    },
+                    body: function (_c) {
+                        var val;
 
-                    return __promisify(i).then(function (_t) {
-                        val = _t;
-                        if (val === 5) return _c.__return(val);
-                    });
-                },
-                post: function () {
-                    i++;
-                }
+                        return __promisify(i).then(function (_t) {
+                            val = _t;
+                            if (val === 5) return _c.__return(val);
+                        });
+                    },
+                    post: function () {
+                        i++;
+                    }
+                });
             });
         })().then(function (val) {
             if (val === 5) done();
@@ -165,25 +171,27 @@ describe("loop breaks", function () {
         //   done((total === 15) ? undefined : "Total: " + total); 
         //});
 
-        __async(function () {
-            var total = 0;
+        (function () {
+            return __async(function () {
+                var total = 0;
 
-            var i = 0;
-            return __loop({
-                condition: function () {
-                    return i < 10;
-                },
-                body: function (_c) {
-                    return __promisify(i).then(function (_t) {
-                        total += _t;
-                        if (i === 5) return _c.__break();
-                    });
-                },
-                post: function () {
-                    i++;
-                }
-            }, function () {
-                return total;
+                var i = 0;
+                return __loop({
+                    condition: function () {
+                        return i < 10;
+                    },
+                    body: function (_c) {
+                        return __promisify(i).then(function (_t) {
+                            total += _t;
+                            if (i === 5) return _c.__break();
+                        });
+                    },
+                    post: function () {
+                        i++;
+                    }
+                }, function () {
+                    return total;
+                });
             });
         })().then(function (total) {
             done((total === 15) ? undefined : "Total: " + total);
@@ -204,25 +212,27 @@ describe("loop continues", function () {
         //   done((total === 27) ? undefined : "Total: " + total); 
         //});
 
-        __async(function () {
-            var total = 0;
+        (function () {
+            return __async(function () {
+                var total = 0;
 
-            var i = 0;
-            return __loop({
-                condition: function () {
-                    return i < 10;
-                },
-                body: function (_c) {
-                    if (i % 3 === 0) return _c.__continue();
-                    return __promisify(i).then(function (_t) {
-                        total += _t;
-                    });
-                },
-                post: function () {
-                    i++;
-                }
-            }, function () {
-                return total;
+                var i = 0;
+                return __loop({
+                    condition: function () {
+                        return i < 10;
+                    },
+                    body: function (_c) {
+                        if (i % 3 === 0) return _c.__continue();
+                        return __promisify(i).then(function (_t) {
+                            total += _t;
+                        });
+                    },
+                    post: function () {
+                        i++;
+                    }
+                }, function () {
+                    return total;
+                });
             });
         })().then(function (total) {
             done((total === 27) ? undefined : "Total: " + total);
