@@ -116,20 +116,22 @@ describe("Branching with no returns", function () {
 
         var a, b, c;
 
-        var prom = __async(function () {
-            return __ifElse([{
-                condition: function () {
-                    return __promisify(18);
-                },
-                body: function () {
-                    a = true;
-                }
-            }, {
-                body: function () {
-                    b = true;
-                }
-            }], function () {
-                c = true;
+        var prom = (function () {
+            return __async(function () {
+                return __ifElse([{
+                    condition: function () {
+                        return __promisify(18);
+                    },
+                    body: function () {
+                        a = true;
+                    }
+                }, {
+                    body: function () {
+                        b = true;
+                    }
+                }], function () {
+                    c = true;
+                });
             });
         })();
 
@@ -169,8 +171,9 @@ describe("Branching with no returns", function () {
 
         var a, b;
 
-        var prom = __async(function () {
-            return __ifElse([
+        var prom = (function () {
+            return __async(function () {
+                return __ifElse([
                 {
                     condition: function () {
                         return true;
@@ -185,8 +188,8 @@ describe("Branching with no returns", function () {
                     body: function () {
                         b = true;
                     }
-                }
-            ])
+                }]);
+            });
         })();
 
         if (__isPromise(prom)) {
@@ -227,14 +230,14 @@ describe("Branching with returns", function () {
 
         var package;
 
-        __async(function () {
-            var requestThree = __promisify(3),
+        (function () {
+            return __async(function () {
+                var requestThree = __promisify(3),
                 requestFive = __promisify(5),
                 requestNine = __promisify(9),
                 total, diff;
 
-            return __ifElse([
-                {
+                return __ifElse([{
                     condition: function () {
                         var _0, _1, _2;
 
@@ -260,8 +263,8 @@ describe("Branching with returns", function () {
                         diff = total - 17;
                         return _c.__return(diff);
                     }
-                }
-            ]);
+                }]);
+            });
         })().then(function (_t) {
             package = _t;
 
@@ -296,14 +299,14 @@ describe("Branching with returns", function () {
 
         var package;
 
-        __async(function () {
-            var requestThree = __promisify(3),
+        (function () {
+            return __async(function () {
+                var requestThree = __promisify(3),
                 requestFive = __promisify(5),
                 requestSeven = __promisify(7),
                 total, diff;
 
-            return __ifElse([
-                {
+                return __ifElse([{
                     condition: function () {
                         var _0, _1, _2;
 
@@ -329,8 +332,8 @@ describe("Branching with returns", function () {
                         diff = total - 17;
                         return _c.__return(diff);
                     }
-                }
-            ]);
+                }]);
+            });
         })().then(function (_t) {
             package = _t;
 
@@ -357,10 +360,11 @@ describe("Branching with returns", function () {
         //    done((total === 5) ? undefined : "stuff don't work");
         //});
 
-        __async(function () {
-            var three, total = 0;
+        (function () {
+            return __async(function () {
+                var three, total = 0;
 
-            return __ifElse([
+                return __ifElse([
                 {
                     condition: function () {
                         var _0, _1;
@@ -390,9 +394,9 @@ describe("Branching with returns", function () {
                             }
                         ], undefined, _c);
                     }
-                }
-            ], undefined, function () {
-                return "nops"
+                }], undefined, function () {
+                    return "nops"
+                });
             });
         })().then(function (total) {
             done((total === 5) ? undefined : "Value got: " + total);
