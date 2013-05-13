@@ -1,4 +1,5 @@
-var __defer = require('../defer');
+var __defer = require('../defer'),
+    __rejectify = require('../rejectify');
 
 describe("Promises/A+ tests", function () {
     require("promises-aplus-tests").mocha({
@@ -12,4 +13,12 @@ describe("Promises/A+ tests", function () {
             }
         }
     });
+});
+
+describe("Reject tests", function () {
+    it("should call onRejected", function (done) {
+        __rejectify(3).then(undefined, function (e) {
+            done((e === 3) ? undefined : "Error: " + e);
+        });
+    })
 });

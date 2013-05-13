@@ -2,13 +2,19 @@ var __defer = this.__defer || require("./defer"),
     __maybeAsync = this.__defer || require("./maybeAsync"),
     __getControlBlock = this.__getControlBlock || require("./control");
 
-var __tryCatch = this.__tryCatch || function(__try, __catch, __finally, __continuation, _pc) {
+var __tryCatch = this.__tryCatch || function (__tryBlock, __continuation, _pc) {
     var d = __defer(),
         controlBlock = __getControlBlock(_pc);
 
     function afterTryAndCatch() {
-        if (controlBlock.continueExecution) handleFinally();
+        if (controlBlock.continueExecuting) handleFinally();
         else d.resolve((controlBlock.shouldReturn) ? controlBlock.returnValue : undefined);
+    }
+
+    function handleErrorInCatch(e) {
+        __maybeAsync(function () { if (__tryBlock.__finally) return __tryBlock.__finally(); }, function () {
+            rejectWithError(e);
+        }, rejectWithError)
     }
 
     function rejectWithError(e) {
@@ -16,19 +22,19 @@ var __tryCatch = this.__tryCatch || function(__try, __catch, __finally, __contin
     }
 
     function handleTry() {
-        __maybeAsync(function() { return __try(controlBlock); }, afterTryAndCatch, handleCatch);
+        __maybeAsync(function () { return __tryBlock.__try(controlBlock); }, afterTryAndCatch, handleCatch);
     }
 
     function handleCatch(e) {
-        __maybeAsync(function () { return __catch(e, controlBlock); }, afterTryAndCatch, rejectWithError);
+        __maybeAsync(function () { return __tryBlock.__catch(e, controlBlock); }, afterTryAndCatch, handleErrorInCatch);
     }
 
     function handleFinally() {
-        __maybeAsync(function() { if(__finally) return __finally(); }, afterFinally, rejectWithError);
+        __maybeAsync(function () { if (__tryBlock.__finally) return __tryBlock.__finally(); }, afterFinally, rejectWithError);
     }
 
     function afterFinally() {
-        if (controlBlock.continueExecution) {
+        if (controlBlock.continueExecuting) {
             __maybeAsync(function () {
                 if (__continuation) return __continuation();
             }, function (val) {
@@ -38,6 +44,8 @@ var __tryCatch = this.__tryCatch || function(__try, __catch, __finally, __contin
             });
         } else d.resolve((controlBlock.shouldReturn) ? controlBlock.returnValue : undefined);
     }
+
+    handleTry();
 
     return d.promise;
 }
