@@ -1,4 +1,5 @@
 var __promisify = require("../promisify.js"),
+    __async = require("../async"),
     __and = require("../and.js"),
     __or = require("../or.js"),
     __ifElse = require("../ifElse.js"),
@@ -20,7 +21,7 @@ describe("Loop with no returns", function () {
         //    else done("No bueno."); 
         //});
 
-        function fac(n) {
+        var fac = __async(function fac(n) {
             var total = 1;
 
             var i = 1;
@@ -40,7 +41,7 @@ describe("Loop with no returns", function () {
             }, function () {
                 return total;
             });
-        }
+        });
 
         fac(5).then(function (val) {
             if (val === 120) done();
@@ -72,7 +73,7 @@ describe("Loop with no returns", function () {
 
         //serviceJobs().then(function() { done(); });
 
-        function serviceJobs() {
+        var serviceJobs = __async(function serviceJobs() {
             var numJobsLeft = 5;
             function getNumJobs() {
                 return __promisify(numJobsLeft);
@@ -101,7 +102,7 @@ describe("Loop with no returns", function () {
                     });
                 }
             });
-        }
+        });
 
         serviceJobs().then(function () { done(); });
 
@@ -120,7 +121,7 @@ describe("loop with returns", function () {
         //    else done(val + '');
         //});
 
-        (function () {
+        __async(function () {
             //for(var i = 0; i < 10; i++) {
             //    var val = await __promisify(i);
             //    if(val === 5) return val;
@@ -164,7 +165,7 @@ describe("loop breaks", function () {
         //   done((total === 15) ? undefined : "Total: " + total); 
         //});
 
-        (function () {
+        __async(function () {
             var total = 0;
 
             var i = 0;
@@ -203,7 +204,7 @@ describe("loop continues", function () {
         //   done((total === 27) ? undefined : "Total: " + total); 
         //});
 
-        (function () {
+        __async(function () {
             var total = 0;
 
             var i = 0;

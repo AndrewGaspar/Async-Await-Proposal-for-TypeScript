@@ -1,9 +1,9 @@
-var __defer = this.__defer || require("./defer"),
+var __getSyncEntity = this.__getSyncEntity || require("./getSyncEntity"),
     __maybeAsync = this.__maybeAsync || require("./maybeAsync"),
     __getControlBlock = this.__getControlBlock || require("./control");
 
-var __loop = this.__loop || function(loop, continuation, _pc) {
-    var def = __defer(),
+var __loop = this.__loop || function (loop, continuation, _pc) {
+    var ent = __getSyncEntity(),
         controlBlock = __getControlBlock(_pc, { __break: true, __continue: true });
 
 
@@ -36,7 +36,7 @@ var __loop = this.__loop || function(loop, continuation, _pc) {
 
     function next() {
         if (controlBlock.shouldReturn) {
-            def.resolve(controlBlock.returnValue);
+            resolve(controlBlock.returnValue);
         } else if (controlBlock.shouldBreak) {
             exitLoop();
         } else {
@@ -46,15 +46,19 @@ var __loop = this.__loop || function(loop, continuation, _pc) {
         }
     }
 
+    function resolve(val) {
+        ent.resolve(val);
+    }
+
     function handleError(e) {
-        def.reject(e);
+        ent.reject(e);
     }
 
     function exitLoop() {
-        __maybeAsync(function() {
+        __maybeAsync(function () {
             return (continuation) ? continuation() : undefined;
         }, function (val) {
-            def.resolve(val);
+            resolve(val);
         }, handleError);
     }
 
@@ -62,7 +66,7 @@ var __loop = this.__loop || function(loop, continuation, _pc) {
 
     start();
 
-    return def.promise;
+    return ent.getReturn();
 }
 
 module.exports = __loop;
