@@ -1,19 +1,19 @@
-var __defer = this.__defer || require('./defer'),
+var __getSyncEntity = this.__getSyncEntity || require('./getSyncEntity'),
     __maybeAsync = this.__maybeAsync || require('./maybeAsync');
 
 // OR:
 var __or = this.__or || function(b1, b2) {
-    var def = __defer();
+    var ent = __getSyncEntity();
     __maybeAsync(b1, function (val) {
         try {
-            def.resolve((val) ? val : b2());
+            ent.resolve((val) ? val : b2());
         } catch (e) {
-            def.reject(e);
+            ent.reject(e);
         }
     }, function (e) {
-        def.reject(e);
+        ent.reject(e);
     });
-    return def.promise;
+    return ent.getReturn();
 }
 
 module.exports = __or
