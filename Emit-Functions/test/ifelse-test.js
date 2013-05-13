@@ -1,5 +1,6 @@
 var __promisify = require("../promisify"),
     __isPromise = require("../isPromise"),
+    __async = require("../async"),
     __and = require("../and"),
     __or = require("../or"),
     __ifElse = require("../ifElse"),
@@ -115,7 +116,7 @@ describe("Branching with no returns", function () {
 
         var a, b, c;
 
-        var prom = (function () {
+        var prom = __async(function () {
             return __ifElse([{
                 condition: function () {
                     return __promisify(18);
@@ -168,7 +169,7 @@ describe("Branching with no returns", function () {
 
         var a, b;
 
-        var prom = (function () {
+        var prom = __async(function () {
             return __ifElse([
                 {
                     condition: function () {
@@ -226,7 +227,7 @@ describe("Branching with returns", function () {
 
         var package;
 
-        (function () {
+        __async(function () {
             var requestThree = __promisify(3),
                 requestFive = __promisify(5),
                 requestNine = __promisify(9),
@@ -295,7 +296,7 @@ describe("Branching with returns", function () {
 
         var package;
 
-        (function () {
+        __async(function () {
             var requestThree = __promisify(3),
                 requestFive = __promisify(5),
                 requestSeven = __promisify(7),
@@ -356,7 +357,7 @@ describe("Branching with returns", function () {
         //    done((total === 5) ? undefined : "stuff don't work");
         //});
 
-        (function () {
+        __async(function () {
             var three, total = 0;
 
             return __ifElse([

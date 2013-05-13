@@ -1,9 +1,9 @@
-var __defer = this.__defer || require("./defer"),
+var __getSyncEntity = this.__getSyncEntity || require("./getSyncEntity"),
     __maybeAsync = this.__maybeAsync || require("./maybeAsync"),
     __getControlBlock = this.__getControlBlock || require("./control");
 
 var __ifElse = this.__ifElse || function (conditionals, continuation, _pc) {
-    var def = __defer(),
+    var ent = __getSyncEntity(),
         controlBlock = __getControlBlock(_pc),
         i = 0;
 
@@ -23,7 +23,7 @@ var __ifElse = this.__ifElse || function (conditionals, continuation, _pc) {
                     //  Otherwise, "exist" the if-else block.
 
                     if(controlBlock.continueExecuting) exit();
-                    else def.resolve((controlBlock.shouldReturn) ? controlBlock.returnValue : undefined);
+                    else resolve((controlBlock.shouldReturn) ? controlBlock.returnValue : undefined);
                 }
 
                 if (truthy) {
@@ -35,9 +35,9 @@ var __ifElse = this.__ifElse || function (conditionals, continuation, _pc) {
         } else exit();
     }
 
-    function resolve(val) { def.resolve(val); }
+    function resolve(val) { ent.resolve(val); }
 
-    function handleError(e) { def.reject(e); }
+    function handleError(e) { ent.reject(e); }
 
     function exit() {
         __maybeAsync(function() {
@@ -47,7 +47,7 @@ var __ifElse = this.__ifElse || function (conditionals, continuation, _pc) {
 
     handleIf();
 
-    return def.promise;
+    return ent.getReturn();
 }
 
 module.exports = __ifElse; // for testing purposes
