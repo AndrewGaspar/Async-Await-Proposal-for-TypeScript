@@ -1,14 +1,14 @@
-var __defer = this.__defer || require("./defer"),
+var __getSyncEntity = this.__defer || require("./getSyncEntity"),
     __maybeAsync = this.__defer || require("./maybeAsync"),
     __getControlBlock = this.__getControlBlock || require("./control");
 
 var __tryCatch = this.__tryCatch || function (__tryBlock, __continuation, _pc) {
-    var d = __defer(),
+    var ent = __getSyncEntity(),
         controlBlock = __getControlBlock(_pc);
 
     function afterTryAndCatch() {
         if (controlBlock.continueExecuting) handleFinally();
-        else d.resolve((controlBlock.shouldReturn) ? controlBlock.returnValue : undefined);
+        else resolve((controlBlock.shouldReturn) ? controlBlock.returnValue : undefined);
     }
 
     function handleErrorInCatch(e) {
@@ -17,8 +17,12 @@ var __tryCatch = this.__tryCatch || function (__tryBlock, __continuation, _pc) {
         }, rejectWithError)
     }
 
+    function resolve(val) {
+        ent.resolve(val);
+    }
+
     function rejectWithError(e) {
-        d.reject(e);
+        ent.reject(e);
     }
 
     function handleTry() {
@@ -37,17 +41,13 @@ var __tryCatch = this.__tryCatch || function (__tryBlock, __continuation, _pc) {
         if (controlBlock.continueExecuting) {
             __maybeAsync(function () {
                 if (__continuation) return __continuation();
-            }, function (val) {
-                d.resolve(val);
-            }, function (e) {
-                d.reject(e);
-            });
-        } else d.resolve((controlBlock.shouldReturn) ? controlBlock.returnValue : undefined);
+            }, resolve, rejectWithError);
+        } else resolve((controlBlock.shouldReturn) ? controlBlock.returnValue : undefined);
     }
 
     handleTry();
 
-    return d.promise;
+    return ent.getReturn();
 }
 
 module.exports = __tryCatch; // included to allow testing
