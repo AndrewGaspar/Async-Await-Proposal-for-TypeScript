@@ -28,15 +28,15 @@ describe("Loop with no returns", function () {
                 var i = 1;
 
                 return __loop({
-                    condition: function () {
+                    __while: function () {
                         return i <= n;
                     },
-                    body: function () {
+                    __body: function () {
                         return __promisify(i).then(function (_t) {
                             total *= _t;
                         });
                     },
-                    post: function () {
+                    __post: function () {
                         i++;
                     }
                 }, function () {
@@ -92,12 +92,12 @@ describe("Loop with no returns", function () {
                 }
 
                 return __loop({
-                    condition: function () {
+                    __while: function () {
                         return getNumJobs().then(function (_t) {
                             return _t > 0;
                         });
                     },
-                    body: function () {
+                    __body: function () {
                         var x;
                         return doJob().then(function (_t) {
                             x = _t;
@@ -135,10 +135,10 @@ describe("loop with returns", function () {
                 var i = 0;
 
                 return __loop({
-                    condition: function () {
+                    __while: function () {
                         return i < 10;
                     },
-                    body: function (_c) {
+                    __body: function (_c) {
                         var val;
 
                         return __promisify(i).then(function (_t) {
@@ -146,7 +146,7 @@ describe("loop with returns", function () {
                             if (val === 5) return _c.__return(val);
                         });
                     },
-                    post: function () {
+                    __post: function () {
                         i++;
                     }
                 });
@@ -177,16 +177,16 @@ describe("loop breaks", function () {
 
                 var i = 0;
                 return __loop({
-                    condition: function () {
+                    __while: function () {
                         return i < 10;
                     },
-                    body: function (_c) {
+                    __body: function (_c) {
                         return __promisify(i).then(function (_t) {
                             total += _t;
                             if (i === 5) return _c.__break();
                         });
                     },
-                    post: function () {
+                    __post: function () {
                         i++;
                     }
                 }, function () {
@@ -218,16 +218,16 @@ describe("loop continues", function () {
 
                 var i = 0;
                 return __loop({
-                    condition: function () {
+                    __while: function () {
                         return i < 10;
                     },
-                    body: function (_c) {
+                    __body: function (_c) {
                         if (i % 3 === 0) return _c.__continue();
                         return __promisify(i).then(function (_t) {
                             total += _t;
                         });
                     },
-                    post: function () {
+                    __post: function () {
                         i++;
                     }
                 }, function () {

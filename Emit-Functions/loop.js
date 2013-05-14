@@ -9,7 +9,7 @@ var __loop = this.__loop || function (loop, continuation, _pc) {
 
     function start() {
         __maybeAsync(function () {
-            if (loop.initialization) return loop.initialization();
+            if (loop.__initialization) return loop.__initialization();
         }, evaluateCondition, handleError);
     }
 
@@ -18,7 +18,7 @@ var __loop = this.__loop || function (loop, continuation, _pc) {
             // If there is no indication that the conditionEval needs to be skipped,
             // check to see if there is a condition function. If not, return true.
             // Otherwise, evaluate loop.condition, which may or may not return a promise.
-            var conditionEvaluation = skipConditionEval || (!loop.condition || loop.condition());
+            var conditionEvaluation = skipConditionEval || (!loop.__while || loop.__while());
             skipConditionEval = false; // set to false because this is only done once, usually with do-while
             return conditionEvaluation; // return - may be promise
         }, checkCondition, handleError);
@@ -27,9 +27,7 @@ var __loop = this.__loop || function (loop, continuation, _pc) {
     function checkCondition(truthy) {
         __maybeAsync(function () {
             if (truthy) {
-                if (loop.body) {
-                    return loop.body(controlBlock);
-                }
+                return loop.__body && loop.__body(controlBlock);
             } else controlBlock.__break();
         }, next, handleError);
     }
@@ -41,7 +39,7 @@ var __loop = this.__loop || function (loop, continuation, _pc) {
             exitLoop();
         } else {
             __maybeAsync(function () {
-                if (loop.post) return loop.post();
+                return loop.__post && loop.__post();
             }, evaluateCondition, handleError);
         }
     }
@@ -56,13 +54,13 @@ var __loop = this.__loop || function (loop, continuation, _pc) {
 
     function exitLoop() {
         __maybeAsync(function () {
-            return (continuation) ? continuation() : undefined;
+            return continuation && continuation();
         }, function (val) {
             resolve(val);
         }, handleError);
     }
 
-    var skipConditionEval = !!(loop.isDo);
+    var skipConditionEval = !!(loop.__do);
 
     start();
 

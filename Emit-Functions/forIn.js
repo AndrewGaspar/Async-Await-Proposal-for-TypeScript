@@ -7,7 +7,7 @@ var __forIn = this.__forIn || function (loop, continuation, parentControl) {
     var keys, i;
 
     return __loop({
-        initialization: function () {
+        __initialization: function () {
             i = 0;
 
             var prom = loop.object();
@@ -15,13 +15,13 @@ var __forIn = this.__forIn || function (loop, continuation, parentControl) {
                 keys = __keys(obj);
             });
         },
-        condition: function () {
+        __while: function () {
             return i < keys.length;
         },
-        body: function () {
+        __body: function () {
             return loop.body(keys[i]);
         },
-        post: function () {
+        __post: function () {
             i++;
         }
     }, continuation, parentControl);
