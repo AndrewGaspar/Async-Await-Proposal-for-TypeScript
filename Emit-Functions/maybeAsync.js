@@ -9,7 +9,7 @@ var __maybeAsync = this.__maybeAsync || function(maybeReturnsPromise, handleResu
         var maybePromise = maybeReturnsPromise();
         return __isPromise(maybePromise) ? maybePromise.then(handleResult, handleError) : handleResult(maybePromise);
     } catch (e) {
-        handleError(e);
+        return handleError(e);
     }
 }
 
