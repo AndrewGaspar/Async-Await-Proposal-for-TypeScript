@@ -18,7 +18,8 @@ statement.
 
 ## Goals
 * Be able to handle all use cases covered by async/await in C#.
-* Fairly readable output
+* Output that can be easily grokked by un-initiated. This means having absolutely no mystery in the source transformations.
+* Ability to convert other asynchronous operations into promises.
 
 ## Organization
 * Start with a simple syntax definition. I.e. this is how the code will look like when you write it.
@@ -40,21 +41,22 @@ a success:
 
 ## Non-trivial Language Features to Preserve
 
-* Variable declaration hoisting must remain intact.
-* Binary operations
-* Short-circuiting boolean operators
+* Variable Hoisting
+* Binary Operators
+* Short-Circuiting Boolean Operators
 * Conditional Expressions
 * Loops
-* Try-catch
+* Switch
+* Try-catch-finally
 
 # Table of Contents
 1. Expressions
   1. [Implicit Promise Interface](/Expressions/Implicit%20Promise%20Interface.md)
-  2. [Async Function Expression](/Expressions/Async%20Function%20Expression.md)
-  3. [Await Expression](/Expressions/Await%20Expression.md)
-2. Code Generation
+  1. [Async Function Expression](/Expressions/Async%20Function%20Expression.md)
+  1. [Await Expression](/Expressions/Await%20Expression.md)
+1. Code Generation
   1. [Simple Await Expression](/Code-Generation/1%20-%20Simple%20Await%20Expression.md)
-  2. [Await Expressions in Compound Expressions](/Code-Generation/2%20-%20Await%20Expressions%20in%20Compound%20Expressions.md)
-  3. [Await in Boolean Expressions](/Code-Generation/3%20-%20Await%20in%20Boolean%20Expressions.md)
-  4. [Await in Conditionals](/Code-Generation/4%20-%20Await%20in%20Conditionals.md)
-  4. [Await in Loops](/Code-Generation/5%20-%20Await%20in%20Loops.md)
+  1. [Await Expressions in Compound Expressions](/Code-Generation/2%20-%20Await%20Expressions%20in%20Compound%20Expressions.md)
+  1. [Await in Boolean Expressions](/Code-Generation/3%20-%20Await%20in%20Boolean%20Expressions.md)
+  1. [Await in Conditionals](/Code-Generation/4%20-%20Await%20in%20Conditionals.md)
+  1. [Await in Loops](/Code-Generation/5%20-%20Await%20in%20Loops.md)
