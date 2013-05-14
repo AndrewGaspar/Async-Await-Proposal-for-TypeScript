@@ -40,7 +40,7 @@ var __tryCatch = this.__tryCatch || function (__tryBlock, __continuation, _pc) {
     function afterFinally() {
         if (controlBlock.continueExecuting) {
             __maybeAsync(function () {
-                if (__continuation) return __continuation();
+                return __continuation && __continuation();
             }, resolve, rejectWithError);
         } else resolve((controlBlock.shouldReturn) ? controlBlock.returnValue : undefined);
     }

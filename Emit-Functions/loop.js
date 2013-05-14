@@ -9,7 +9,7 @@ var __loop = this.__loop || function (loop, continuation, _pc) {
 
     function start() {
         __maybeAsync(function () {
-            if (loop.__initialization) return loop.__initialization();
+            return loop.__initialization && loop.__initialization();
         }, evaluateCondition, handleError);
     }
 
@@ -55,9 +55,7 @@ var __loop = this.__loop || function (loop, continuation, _pc) {
     function exitLoop() {
         __maybeAsync(function () {
             return continuation && continuation();
-        }, function (val) {
-            resolve(val);
-        }, handleError);
+        }, resolve, handleError);
     }
 
     var skipConditionEval = !!(loop.__do);
