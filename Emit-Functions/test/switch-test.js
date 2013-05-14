@@ -8,37 +8,38 @@ describe("Switch without promises", function () {
             return __async(function () {
                 var out = 1;
 
-                return __switch(
-                    function () {
+                return __switch({
+                    __switch: function () {
                         return x;
                     },
-                    [{
-                        value: function () {
+                    __cases: [{
+                        __case: function () {
                             return 3;
                         },
-                        body: function () {
+                        __body: function () {
                             out *= 2;
                         }
                     },
                     {
-                        value: function () {
+                        __case: function () {
                             return 2;
                         },
-                        body: function () {
+                        __body: function () {
                             out *= 2;
                         }
                     },
                     {
-                        value: function () {
+                        __case: function () {
                             return 1;
                         },
-                        body: function () {
+                        __body: function () {
                             out *= 2;
                         }
-                    }],
-                    function () {
-                        return out;
-                    });
+                    }]
+                },
+                function () {
+                    return out;
+                });
             });
         }
 
@@ -52,38 +53,41 @@ describe("Switch without promises", function () {
 
         (function () {
             return __async(function () {
-                return __switch(function () {
-                    return 1;
-                }, [{
-                    value: function () {
-                        return 0;
-                    },
-                    body: function () {
-                        a = true;
-                    }
-                }, {
-                    value: function () {
+                return __switch({
+                    __switch: function () {
                         return 1;
-                    },
-                    body: function () {
-                        b = true;
-                    }
-                }, {
-                    value: function () {
-                        return 2;
-                    },
-                    body: function (_c) {
-                        c = true;
-                        return _c.__break();
-                    }
-                }, {
-                    value: function () {
-                        return 3;
-                    },
-                    body: function () {
-                        d = true;
-                    }
-                }], function () {
+                    }, 
+                    __cases: [{
+                        __case: function () {
+                            return 0;
+                        },
+                        __body: function () {
+                            a = true;
+                        }
+                    }, {
+                        __case: function () {
+                            return 1;
+                        },
+                        __body: function () {
+                            b = true;
+                        }
+                    }, {
+                        __case: function () {
+                            return 2;
+                        },
+                        __body: function (_c) {
+                            c = true;
+                            return _c.__break();
+                        }
+                    }, {
+                        __case: function () {
+                            return 3;
+                        },
+                        __body: function () {
+                            d = true;
+                        }
+                    }]
+                }, function () {
                     e = true;
                 });
             });
@@ -101,38 +105,39 @@ describe("Switch with promises", function () {
             return __async(function () {
                 var out = 1;
 
-                return __switch(
-                    function () {
+                return __switch({
+                    __switch: function () {
                         return x;
                     },
-                    [{
-                        value: function () {
+                    __cases: [{
+                        __case: function () {
                             count++;
                             return __promisify(3);
                         },
-                        body: function () {
+                        __body: function () {
                             out *= 2;
                         }
                     },
                     {
-                        value: function () {
+                        __case: function () {
                             return 2;
                         },
-                        body: function () {
+                        __body: function () {
                             out *= 2;
                         }
                     },
                     {
-                        value: function () {
+                        __case: function () {
                             return 1;
                         },
-                        body: function () {
+                        __body: function () {
                             out *= 2;
                         }
-                    }],
-                    function () {
-                        return out;
-                    });
+                    }]
+                },
+                function () {
+                    return out;
+                });
             });
         }
 
@@ -144,30 +149,33 @@ describe("Switch with promises", function () {
     it("should return early", function (done) {
         (function () {
             return __async(function () {
-                return __switch(function () {
-                    return 1;
-                }, [{
-                    value: function () {
-                        return 0;
-                    },
-                    body: function (_c) {
-                        return _c.__return(2);
-                    }
-                }, {
-                    value: function () {
+                return __switch({
+                    __switch: function () {
                         return 1;
-                    },
-                    body: function (_c) {
-                        return _c.__return(1);
-                    }
-                }, {
-                    value: function () {
-                        return 2;
-                    },
-                    body: function (_c) {
-                        return _c.__return(0);
-                    }
-                }]);
+                    }, 
+                    __cases: [{
+                        __case: function () {
+                            return 0;
+                        },
+                        __body: function (_c) {
+                            return _c.__return(2);
+                        }
+                    }, {
+                        __case: function () {
+                            return 1;
+                        },
+                        __body: function (_c) {
+                            return _c.__return(1);
+                        }
+                    }, {
+                        __case: function () {
+                            return 2;
+                        },
+                        __body: function (_c) {
+                            return _c.__return(0);
+                        }
+                    }]
+                });
             });
         })().then(function (x) {
             done((x === 1) ? undefined : "Val: " + x);
