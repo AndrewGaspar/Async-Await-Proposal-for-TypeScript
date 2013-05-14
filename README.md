@@ -53,6 +53,7 @@ a success:
 1. Expressions
   1. [Implicit Promise Interface](/Expressions/Implicit%20Promise%20Interface.md)
   1. [Async Function Expression](/Expressions/Async%20Function%20Expression.md)
+  1. [Defer Function Expression](/Expressions/Defer%20Function%20Expression.md)
   1. [Await Expression](/Expressions/Await%20Expression.md)
 1. Code Generation
   1. [Simple Await Expression](/Code-Generation/1%20-%20Simple%20Await%20Expression.md)
