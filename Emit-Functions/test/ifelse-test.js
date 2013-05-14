@@ -10,25 +10,27 @@ describe("Branching with no returns", function () {
     it("Should only run first condition", function (done) {
         var a, b, c;
 
-        __ifElse([{
-            condition: function () {
-                return true;
-            },
-            body: function () {
-                a = true;
-            }
-        }, {
-            condition: function () {
-                return true;
-            },
-            body: function () {
-                b = true;
-            }
-        }, {
-            body: function () {
-                c = true;
-            }
-        }], function () {
+        __ifElse({
+            __conditionals: [{
+                __if: function () {
+                    return true;
+                },
+                __body: function () {
+                    a = true;
+                }
+            }, {
+                __if: function () {
+                    return true;
+                },
+                __body: function () {
+                    b = true;
+                }
+            }, {
+                __body: function () {
+                    c = true;
+                }
+            }]
+        }, function () {
             if (a && !b && !c) done();
             else done("Did it wrong.")
         });
@@ -37,25 +39,27 @@ describe("Branching with no returns", function () {
     it("should wait on condition promise to fulfill", function () {
         var a, b, c;
 
-        __ifElse([{
-            condition: function () {
-                return __promisify(true);
-            },
-            body: function () {
-                a = true;
-            }
-        }, {
-            condition: function () {
-                return true;
-            },
-            body: function () {
-                b = true;
-            }
-        }, {
-            body: function () {
-                c = true;
-            }
-        }], function () {
+        __ifElse({ 
+            __conditionals: [{
+                __if: function () {
+                    return __promisify(true);
+                },
+                __body: function () {
+                    a = true;
+                }
+            }, {
+                __if: function () {
+                    return true;
+                },
+                __body: function () {
+                    b = true;
+                }
+            }, {
+                __body: function () {
+                    c = true;
+                }
+            }]
+        }, function () {
             if (a && !b && !c) done();
             else done("Did it wrong.")
         });
@@ -64,27 +68,29 @@ describe("Branching with no returns", function () {
     it("conditions should only evaluate as needed", function () {
         var x = 0, a, b, c;
 
-        __ifElse([{
-            condition: function () {
-                x += 2;
-                return __promisify(true);
-            },
-            body: function () {
-                a = true;
-            }
-        }, {
-            condition: function () {
-                x += 3;
-                return true;
-            },
-            body: function () {
-                b = true;
-            }
-        }, {
-            body: function () {
-                c = true;
-            }
-        }], function () {
+        __ifElse({ 
+            __conditionals: [{
+                __if: function () {
+                    x += 2;
+                    return __promisify(true);
+                },
+                __body: function () {
+                    a = true;
+                }
+            }, {
+                __if: function () {
+                    x += 3;
+                    return true;
+                },
+                __body: function () {
+                    b = true;
+                }
+            }, {
+                __body: function () {
+                    c = true;
+                }
+            }]
+        }, function () {
             if (a && !b && !c && x === 2) done();
             else done("Did it wrong.")
         });
@@ -118,18 +124,20 @@ describe("Branching with no returns", function () {
 
         var prom = (function () {
             return __async(function () {
-                return __ifElse([{
-                    condition: function () {
-                        return __promisify(18);
-                    },
-                    body: function () {
-                        a = true;
-                    }
-                }, {
-                    body: function () {
-                        b = true;
-                    }
-                }], function () {
+                return __ifElse({ 
+                    __conditionals: [{
+                        __if: function () {
+                            return __promisify(18);
+                        },
+                        __body: function () {
+                            a = true;
+                        }
+                    }, {
+                        __body: function () {
+                            b = true;
+                        }
+                    }]
+                }, function () {
                     c = true;
                 });
             });
@@ -173,22 +181,24 @@ describe("Branching with no returns", function () {
 
         var prom = (function () {
             return __async(function () {
-                return __ifElse([
-                {
-                    condition: function () {
-                        return true;
+                return __ifElse({ 
+                    __conditionals: [
+                    {
+                        __if: function () {
+                            return true;
+                        },
+                        __body: function () {
+                            return __promisify().then(function () {
+                                a = true;
+                            });
+                        }
                     },
-                    body: function () {
-                        return __promisify().then(function () {
-                            a = true;
-                        });
-                    }
-                },
-                {
-                    body: function () {
-                        b = true;
-                    }
-                }]);
+                    {
+                        __body: function () {
+                            b = true;
+                        }
+                    }]
+                });
             });
         })();
 
@@ -237,33 +247,35 @@ describe("Branching with returns", function () {
                 requestNine = __promisify(9),
                 total, diff;
 
-                return __ifElse([{
-                    condition: function () {
-                        var _0, _1, _2;
+                return __ifElse({ 
+                    __conditionals: [{
+                        __if: function () {
+                            var _0, _1, _2;
 
-                        return requestThree.then(function (_t) {
-                            _0 = _t;
-                            return requestFive;
-                        }).then(function (_t) {
-                            _1 = _t;
-                            return requestNine;
-                        }).then(function (_t) {
-                            _2 = _t;
-                            return (total = _0 + _1 + _2) === 17;
-                        });
-                    },
-                    body: function (_c) {
-                        return _c.__return({
-                            message: "Good work, Agent Ballmer.",
-                            payload: "Sweet, sweet honey."
-                        });
-                    }
-                }, {
-                    body: function (_c) {
-                        diff = total - 17;
-                        return _c.__return(diff);
-                    }
-                }]);
+                            return requestThree.then(function (_t) {
+                                _0 = _t;
+                                return requestFive;
+                            }).then(function (_t) {
+                                _1 = _t;
+                                return requestNine;
+                            }).then(function (_t) {
+                                _2 = _t;
+                                return (total = _0 + _1 + _2) === 17;
+                            });
+                        },
+                        __body: function (_c) {
+                            return _c.__return({
+                                message: "Good work, Agent Ballmer.",
+                                payload: "Sweet, sweet honey."
+                            });
+                        }
+                    }, {
+                        __body: function (_c) {
+                            diff = total - 17;
+                            return _c.__return(diff);
+                        }
+                    }]
+                });
             });
         })().then(function (_t) {
             package = _t;
@@ -306,33 +318,35 @@ describe("Branching with returns", function () {
                 requestSeven = __promisify(7),
                 total, diff;
 
-                return __ifElse([{
-                    condition: function () {
-                        var _0, _1, _2;
+                return __ifElse({ 
+                    __conditionals: [{
+                        __if: function () {
+                            var _0, _1, _2;
 
-                        return requestThree.then(function (_t) {
-                            _0 = _t;
-                            return requestFive;
-                        }).then(function (_t) {
-                            _1 = _t;
-                            return requestSeven;
-                        }).then(function (_t) {
-                            _2 = _t;
-                            return (total = _0 + _1 + _2) === 17;
-                        });
-                    },
-                    body: function (_c) {
-                        return _c.__return({
-                            message: "Good work, Agent Ballmer.",
-                            payload: "Sweet, sweet honey."
-                        });
-                    }
-                }, {
-                    body: function (_c) {
-                        diff = total - 17;
-                        return _c.__return(diff);
-                    }
-                }]);
+                            return requestThree.then(function (_t) {
+                                _0 = _t;
+                                return requestFive;
+                            }).then(function (_t) {
+                                _1 = _t;
+                                return requestSeven;
+                            }).then(function (_t) {
+                                _2 = _t;
+                                return (total = _0 + _1 + _2) === 17;
+                            });
+                        },
+                        __body: function (_c) {
+                            return _c.__return({
+                                message: "Good work, Agent Ballmer.",
+                                payload: "Sweet, sweet honey."
+                            });
+                        }
+                    }, {
+                        __body: function (_c) {
+                            diff = total - 17;
+                            return _c.__return(diff);
+                        }
+                    }]
+                });
             });
         })().then(function (_t) {
             package = _t;
@@ -364,37 +378,39 @@ describe("Branching with returns", function () {
             return __async(function () {
                 var three, total = 0;
 
-                return __ifElse([
-                {
-                    condition: function () {
-                        var _0, _1;
+                return __ifElse({ 
+                    __conditionals: [
+                    {
+                        __if: function () {
+                            var _0, _1;
 
-                        return __promisify(1).then(function (_t) {
-                            _0 = _t;
-                            return __promisify(2);
-                        }).then(function (_t) {
-                            _1 = _t;
-                            return (three = _0 + _1) === 3;
-                        });
-                    },
-                    body: function (_c) {
-                        total += three;
+                            return __promisify(1).then(function (_t) {
+                                _0 = _t;
+                                return __promisify(2);
+                            }).then(function (_t) {
+                                _1 = _t;
+                                return (three = _0 + _1) === 3;
+                            });
+                        },
+                        __body: function (_c) {
+                            total += three;
 
-                        return __ifElse([
-                            {
-                                condition: function () {
-                                    return total + 2 === 5
-                                },
-                                body: function (_c) {
-                                    return __promisify(2).then(function (_t) {
-                                        total += _t;
-                                        _c.__return(total);
-                                    });
-                                }
-                            }
-                        ], undefined, _c);
-                    }
-                }], undefined, function () {
+                            return __ifElse({ 
+                                __conditionals: [{
+                                    __if: function () {
+                                        return total + 2 === 5
+                                    },
+                                    __body: function (_c) {
+                                        return __promisify(2).then(function (_t) {
+                                            total += _t;
+                                            _c.__return(total);
+                                        });
+                                    }
+                                }]
+                            }, undefined, _c);
+                        }
+                    }]
+                }, undefined, function () {
                     return "nops"
                 });
             });

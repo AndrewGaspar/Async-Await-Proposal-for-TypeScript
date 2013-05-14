@@ -38,15 +38,17 @@ describe("synchronous", function () {
                 return __tryCatch({
                     __try: function () {
                         a = true;
-                        return __ifElse([{
-                            condition: function () {
-                                return true;
-                            },
-                            body: function () {
-                                throw new Error("da");
-                                b = true;
-                            }
-                        }], function () {
+                        return __ifElse({
+                            __conditionals: [{
+                                __if: function () {
+                                    return true;
+                                },
+                                __body: function () {
+                                    throw new Error("da");
+                                    b = true;
+                                }
+                            }]
+                        }, function () {
                             c = true;
                         });
                     },
