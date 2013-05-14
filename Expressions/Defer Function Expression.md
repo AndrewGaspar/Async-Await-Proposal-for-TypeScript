@@ -2,6 +2,14 @@
 
 Defer functions are similar to async functions. Both can use the await keyword and both return promises. The difference is that defer functions intentionally askew standard function syntax to allow you to return values from non-promise returning asynchronous functions.
 
+Defer functions follow this syntax:
+
+```
+DeferFunctionExpression:
+  defer FunctionExpression
+  defer ArrowFunctionExpression
+```
+
 For example, consider a standard node.js library call:
 
 ```js
@@ -25,7 +33,7 @@ getDictionary(function(err, data) {
 
 ```
 
-But let's say I want to await this. I cannot because it doesn't return a promise. `defer` functions try to fix this.
+But let's say I want to await this. I cannot because it doesn't return a promise. `defer` functions fix this.
 
 ```ts
 import fs = module("fs");
