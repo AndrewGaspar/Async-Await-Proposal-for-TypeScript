@@ -3,13 +3,10 @@
 The entire basis of our transformations of async functions is based on this procedure:
 
 1. Hoist all variable declarations.
-2. Transform all structures in the async function into awaitable Promise producing expressions. This code generation
+2. Transform all structures in the async/defer function into awaitable Promise producing expressions. This code generation
    is covered in the following sections.
 3. Return the Expression portion of the first AwaitExpression. The await keyword is thrown out.
-4. All of the expressions following the AwaitExpression up to the next AwaitExpression will be placed inside a
-   continuation function. `.then()` will be called on the Promise from the previous step. The continuation function
-   will be passed to the `onFulfilled` parameter of the `.then` call. All `.then()` calls will be chained to the
-   same Promise.
+4. All of the expressions following the AwaitExpression up to the next AwaitExpression will be placed inside a continuation function. `.then()` will be called on the Promise from the previous step. The continuation function will be passed as an argument to the `onFulfilled` parameter of the `.then` call. Rather than continuing to nest promise continuations, `.then` will be called on the return of the previous `.then` for any further AwaitExpressions. There are exceptions which will be dicussed in the next section.
 5. Repeat step 3 through 5 until reaching the end of the function.
 
 All following sections will focus on transforming familiar data structures into a pattern that can be evaluated using
@@ -22,13 +19,13 @@ import _ = module('underscore');
 
 async function getAllAuthorCommentsAsync() {
   var posts = await getBlogPostsAsync();
-  var commentRequests = posts.map((post) => post.getCommentsAsync());
-  var authors = _.uniq(posts.map((post) => post.author));
+  var commentRequests = posts.map(post => post.getCommentsAsync());
+  var authors = _.uniq(posts.map(post => post.author));
   var commentLists = await Q.all(commentRequests);
   var comments = _.flatten(commentLists);
   
-  return comments.filter((comment) => 
-    authors.some((author) => 
+  return comments.filter(comment => 
+    authors.some(author => 
       author === comment.author));
 }
 ```
@@ -68,35 +65,35 @@ have method "some". This is because variable declarations are not explicitly hoi
 "correctly" like this:
 ```js
 function getAllAuthorCommentsAsync() {
-  var posts, commentRequests, authors, commentLists, comments;
+	var _this = this;
+	return __async(function() {
+		var posts, commentRequests, authors, commentLists, comments;
 
-  return getBlogPostsAsync().then(function(_0) {
-    posts = _0;
+		return getBlogPostsAsync().then(function(__t0) {
+			posts = __t0;
     
-    commentRequests = posts.map(function(post) {
-      return post.getCommentsAsync();
-    });
+			commentRequests = posts.map(function(post) {
+				return post.getCommentsAsync();
+			});
     
-    authors = _.uniq(posts.map(function(post) { 
-      return post.author;
-    }));
+			authors = _.uniq(posts.map(function(post) { 
+				return post.author;
+			}));
     
-    return Q.all(commentRequests);
-  }).then(function(_1) {
-    commentLists = _1;
+			return Q.all(commentRequests);
+		}).then(function(__t0) {
+			commentLists = __t0;
     
-    comments = _.flatten(commentLists);
+			comments = _.flatten(commentLists);
     
-    return comments.filter(function(comment) {
-      return authors.some(function(author) {
-        return author === comment.author;
-      });
-    });
-  });
+			return comments.filter(function(comment) {
+				return authors.some(function(author) {
+					return author === comment.author;
+				});
+			});
+		});
+	});
 }
 ```
 
-Now that we have manually hoisted all of the variable declarations in the async function, the function should
-operate as expected. Notice we provide a garbage name, like `_0`, as an argument for each `onFulfilled` function.
-A counter must be kept of how many of these temporary references are made. This is done because it is intended for a
-single use but will not be used again.
+Now that we have manually hoisted all of the variable declarations in the async function, the function should operate as expected. Notice we provide a garbage name, like `__t0`, as an argument for each `onFulfilled` function. A counter must be kept of how many of these temporary references are made in the current scope. This is done because these variables are not intended to be used outside of the operation the await statement is used in (an assignment or as the argument to some other function, etc.).
