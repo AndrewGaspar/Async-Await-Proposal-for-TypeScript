@@ -6,7 +6,7 @@ Consider this expression:
 
 ```ts
 async function getChildrensDiscountAsync(child: Customer, couponId: number) {
-  return await getCouponValueAsync(couponId) + maxDiscount + child.getAge() * -(await getDiscountRateAsync());
+  return await getCouponValueAsync(couponId) + getMaxDiscount() + child.getAge() * -(await getDiscountRateAsync());
 }
 ```
 Although it looks like one long statement, it can be broken up into several smaller statements, looking at each
@@ -18,43 +18,50 @@ We will first chunk up this statement according to order of operations into just
 
 ```ts
 async function getChildrensDiscountAsync(child: Customer, couponId: number) {
-  return ((await getCouponValueAsync(couponId) + getMaxDiscount()) + (child.getAge() * -(await getDiscountRateAsync())));
+  return
+	(
+		( 
+			await getCouponValueAsync(couponId) 
+			+ 
+			getMaxDiscount() 
+		) 
+		+ 
+		(
+			child.getAge()
+			* 
+			(
+				-
+				( 
+					await getDiscountRateAsync()
+				)
+			)
+		)
+	);
 }
 ```
 
-Now, for each operation that contains an `await` keyword, we will execute each function in order and store the output
-of each to a local variable before evaluating the final expression. See this in the next example:
+1. Look at total compound expression. This includes operations done with binary operators, unary operators, or function calls. Choose the first operand.
+2. If the operand is an not awaited, execute the statement and store value in a temp variable like `__t0`. If the operand is awaited, call `.then` on the evaluation of the statement. The evaluation of the next statement will be completed following the this statement, i.e. the evaluation will be placed inside a function passed to `.then`. Return the evaluation of the operand.
+3. Repeat step 2 with each subsequent operand. With nested awaited operations, nested calls to `.then` should occur.
+4. Once each operand in the statement has been evaluated, return from the current context with an evaluation of the operation using the temp variables in place of the original statement.
 
-```ts
-async function getChildrensDiscountAsync(child: Customer, couponId: number) {
-  var _0 = await getCouponValueAsync(couponId);
-  var _1 = getMaxDiscount();
-  var _2 = _0 + _1; // addition of coupon value and max discount
-  var _3 = child.getAge();
-  var _4 = await getDiscountRateAsync();
-  var _5 = -_4; // negative of discount rate
-  var _6 = _3 * _5; // reduction of discount based on age
-  return _2 + _6; // discount less reduction
-}
-```
-
-Which will ultimately be transformed to:
+The above example will ultimately be transformed to:
 ```js
 function getChildrensDiscountAsync(child, couponId) {
-  var _0, _1, _2, _3, _4, _5, _6;
-  
-  return getCouponValueAsync(couponId).then(function(_7) {
-    _0 = _7;
-    _1 = getMaxDiscount();
-    _2 = _0 + _1; // addition of coupon value and max discount
-    _3 = child.getAge();
-    return getDiscountRateAsync();
-  }).then(function(_8) {
-    _4 = _8;
-    _5 = -_4; // negative of discount rate
-    _6 = _3 * _5; // reduction of discount based on age
-    return _2 + _6; // discount less reduction
-  });
+	var _this = this;
+	return __async(function() {
+		return getCouponValueAsync(couponId).then(function(__t0) {
+			var __t1 = getMaxDiscount();
+			return __t0 + __t1;
+		}).then(function(__t0) {
+			var __t1 = child.getAge();
+			return getDiscountRateAsync().then(function(__t2) {
+				return -__t2;
+			}).then(function(__t2) {
+				return __t1 * __t2;
+			});
+		});
+	});
 }
 ```
 
@@ -67,24 +74,14 @@ async function sayChildsDiscountAsync(): void {
 }
 ```
 
-Which transforms to:
-```ts
-async function sayChildsDiscountAsync(): void {
-  var _0 = await getChildrensDiscountAsync(yourChild, yourCoupon);
-  var _1 = "Your discount is: " + _0;
-  console.log(_1);
-}
-```
-
 Which ultimately becomes:
 ```js
 function sayChildsDiscountAsync() {
-  var _0, _1;
-  getChildrensDiscountAsync(yourChild, yourCoupon).then(function(_2) {
-    _0 = _2;
-    _1 = "Your discount is: " + _0;
-    console.log(_1);
-  })
+	__async(function() {
+		return getChildrensDiscountAsync(yourChild, yourCoupon).then(function(__t0) {
+			console.log("Your discount is: " + __t0);
+		});
+	});
 }
 ```
 
